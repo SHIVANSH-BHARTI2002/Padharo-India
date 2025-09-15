@@ -1,25 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import Navbar from '../components/Navbar';
 import SearchBox from '../components/SearchBox';
 import PlaceCard from '../components/PlaceCard';
+import AuthModal from '../components/AuthModal'; // Import the new modal
 import './Home.css';
 
-// Import your images from the assets folder
 import heroBackground from '../assets/hero-background.jpg';
 import ctaBackground from '../assets/cta-background.jpg';
 import tajMahal from '../assets/taj-mahal.png';
 
-const Home = () => { // Changed this line
+const Home = () => {
+    // State to control modal visibility
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const places = [
-        {
-            image: tajMahal,
-            rating: '4.6',
-            title: 'Taj Mahal',
-            location: 'Agra, Uttar Pradesh',
-            description: 'A breathtaking white marble mausoleum, a symbol of eternal love.',
-            price: '2000',
-        },
-        // Add 5 more dummy places for the grid
+        // (Your existing places array)
+        { image: tajMahal, rating: '4.6', title: 'Taj Mahal', location: 'Agra, Uttar Pradesh', description: 'A breathtaking white marble mausoleum, a symbol of eternal love.', price: '2000' },
         { image: tajMahal, rating: '4.5', title: 'Amber Fort', location: 'Jaipur, Rajasthan', description: 'A majestic fort with artistic Hindu style elements.', price: '1500' },
         { image: tajMahal, rating: '4.8', title: 'Golden Temple', location: 'Amritsar, Punjab', description: 'The holiest Gurdwara and a symbol of human brotherhood.', price: '1800' },
         { image: tajMahal, rating: '4.7', title: 'India Gate', location: 'New Delhi, Delhi', description: 'A war memorial dedicated to the soldiers of British India.', price: '1200' },
@@ -29,7 +25,11 @@ const Home = () => { // Changed this line
 
     return (
         <div className="home-page">
-            <Navbar />
+            {/* Pass the function to open the modal to the Navbar */}
+            <Navbar onLoginClick={() => setIsModalOpen(true)} />
+
+            {/* Conditionally render the modal */}
+            {isModalOpen && <AuthModal onClose={() => setIsModalOpen(false)} />}
 
             <header className="hero-section" style={{ backgroundImage: `url(${heroBackground})` }}>
                 <h1>Mysteries of India</h1>
