@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Ignore server environment variables
+server/.env
+
+# Ignore all node modules
+node_modules
