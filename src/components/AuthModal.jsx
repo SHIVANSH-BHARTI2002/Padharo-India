@@ -19,7 +19,7 @@ const AuthModal = ({ onClose }) => {
                 <div className="auth-wrapper-modal">
                     <div className="auth-left" style={{ backgroundImage: `url(${hawaMahal})` }}> {/* Apply image here */}
                         <h1>Create your Account</h1>
-                        <p>Share your artwork and Get projects!</p>
+                        <p>Start Exploring India!</p>
                     </div>
                     <div className="auth-right">
                         {isLogin ? <LoginForm onToggle={toggleForm} /> : <SignUpForm onToggle={toggleForm} />}

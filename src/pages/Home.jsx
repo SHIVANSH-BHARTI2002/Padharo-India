@@ -1,22 +1,21 @@
-import React, { useState } from 'react'; // Import useState
-import Navbar from '../components/Navbar';
+import React from 'react';
+// Remove Navbar and AuthModal imports as they are now in App.jsx
 import SearchBox from '../components/SearchBox';
 import PlaceCard from '../components/PlaceCard';
-import AuthModal from '../components/AuthModal'; // Import the new modal
 import './Home.css';
 
+// ... (keep the rest of your imports)
 import heroBackground from '../assets/hero-background.jpg';
 import ctaBackground from '../assets/cta-background.jpg';
+import fort from '../assets/fort.jpg';
 import tajMahal from '../assets/taj-mahal.png';
 
 const Home = () => {
-    // State to control modal visibility
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Remove the isModalOpen state and related functions
 
     const places = [
-        // (Your existing places array)
         { image: tajMahal, rating: '4.6', title: 'Taj Mahal', location: 'Agra, Uttar Pradesh', description: 'A breathtaking white marble mausoleum, a symbol of eternal love.', price: '2000' },
-        { image: tajMahal, rating: '4.5', title: 'Amber Fort', location: 'Jaipur, Rajasthan', description: 'A majestic fort with artistic Hindu style elements.', price: '1500' },
+        { image: fort, rating: '4.5', title: 'Amber Fort', location: 'Jaipur, Rajasthan', description: 'A majestic fort with artistic Hindu style elements.', price: '1500' },
         { image: tajMahal, rating: '4.8', title: 'Golden Temple', location: 'Amritsar, Punjab', description: 'The holiest Gurdwara and a symbol of human brotherhood.', price: '1800' },
         { image: tajMahal, rating: '4.7', title: 'India Gate', location: 'New Delhi, Delhi', description: 'A war memorial dedicated to the soldiers of British India.', price: '1200' },
         { image: tajMahal, rating: '4.4', title: 'Mysore Palace', location: 'Mysore, Karnataka', description: 'A historical palace and the royal residence at Mysore.', price: '1600' },
@@ -25,12 +24,8 @@ const Home = () => {
 
     return (
         <div className="home-page">
-            {/* Pass the function to open the modal to the Navbar */}
-            <Navbar onLoginClick={() => setIsModalOpen(true)} />
-
-            {/* Conditionally render the modal */}
-            {isModalOpen && <AuthModal onClose={() => setIsModalOpen(false)} />}
-
+            {/* The Navbar is no longer rendered here */}
+            {/* The AuthModal is no longer rendered here */}
             <header className="hero-section" style={{ backgroundImage: `url(${heroBackground})` }}>
                 <h1>Mysteries of India</h1>
                 <SearchBox />

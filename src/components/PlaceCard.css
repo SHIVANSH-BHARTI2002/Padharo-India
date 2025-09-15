@@ -1,10 +1,10 @@
-.place-card {
+/* .place-card {
     background-color: white;
-    /* border-radius: 20px; */
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     position: relative;
-    width: 350px;
+    width: 400px;
+    height: 400px;
     color: #333;
 }
 
@@ -73,4 +73,155 @@
     border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
+} */
+
+/* Modern & Elegant Place Card Redesign */
+.place-card-container {
+    position: relative;
+    width: 360px;
+    height: 450px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: #fff;
+}
+
+.place-card-container:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.place-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.place-card-container:hover .place-card-image {
+    transform: scale(1.1);
+}
+
+/* --- Details Section --- */
+.place-card-details {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    color: white;
+}
+
+.place-card-top-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.place-card-top-info h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.place-card-rating {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.place-card-rating img {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+
+.place-card-bottom-info {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.place-card-location {
+    margin: 0;
+    font-size: 1rem;
+    color: #eee;
+}
+
+.place-card-price {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.price-context {
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #ddd;
+}
+
+/* --- Hover Overlay --- */
+.place-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.place-card-container:hover .place-card-overlay {
+    opacity: 1;
+}
+
+.overlay-content {
+    text-align: center;
+    padding: 1.5rem;
+    color: white;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s;
+    /* Added delay */
+}
+
+.place-card-container:hover .overlay-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.overlay-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.overlay-button {
+    background-color: #e0aa3e;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.overlay-button:hover {
+    background-color: #c8962b;
 }

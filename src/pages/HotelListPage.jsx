@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
+// Remove Navbar import
 import HotelSearchBox from '../components/HotelSearchBox';
 import HotelCard from '../components/HotelCard';
 import './HotelListPage.css';
@@ -19,6 +19,7 @@ const HotelListPage = () => {
             features: ['Free Cancellation', 'Breakfast Available', 'Book on arrival available', 'Free WiFi', '1 bedroom, 2bedroom and 3 bedroom available'],
             price: '5,330'
         },
+        // ... (rest of the hotels array)
         {
             image: hotelRoom,
             rating: '4.3',
@@ -41,8 +42,7 @@ const HotelListPage = () => {
 
     return (
         <div className="hotel-list-page">
-            <Navbar />
-
+            {/* The Navbar is no longer rendered here */}
             <header className="hotel-hero-section" style={{ backgroundImage: `url(${mumbaiHero})` }}>
                 <HotelSearchBox />
             </header>

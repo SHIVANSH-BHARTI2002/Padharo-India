@@ -11,7 +11,6 @@ const LoginForm = ({ onToggle }) => {
             </form>
             <div className="social-login">
                 <button className="btn btn-secondary">Login with Google</button>
-                <button className="btn btn-secondary">Login with Apple</button>
             </div>
             <p className="toggle-auth">
                 Don't have an account? <span onClick={onToggle}>Sign Up</span>

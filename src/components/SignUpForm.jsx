@@ -13,11 +13,10 @@ const SignUpForm = ({ onToggle }) => {
                     <input type="checkbox" id="terms" />
                     <label htmlFor="terms">Accept Terms & Conditions</label>
                 </div>
-                <button type="submit" className="btn btn-primary">Join us</button>
+                <button type="submit" className="btn btn-primary">Sign Up</button>
             </form>
             <div className="social-login">
                 <button className="btn btn-secondary">Sign up with Google</button>
-                <button className="btn btn-secondary">Sign up with Apple</button>
             </div>
             <p className="toggle-auth">
                 Already have an account? <span onClick={onToggle}>Login</span>
