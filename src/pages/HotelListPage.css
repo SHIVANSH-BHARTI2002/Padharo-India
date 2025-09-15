@@ -1,0 +1,35 @@
+.hotel-hero-section {
+    height: 50vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.hotel-list-main {
+    background-color: #f4f7f6;
+    padding: 3rem 0;
+}
+
+.hotel-list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Re-using footer from previous page styles */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 5%;
+    background-color: #111;
+    color: white;
+}
+
+.footer a {
+    color: white;
+    text-decoration: none;
+}
