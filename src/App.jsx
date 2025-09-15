@@ -1,7 +1,13 @@
-import React from 'react'
+import React from 'react';
+import Home from './pages/Home';
+import './App.css';
+import HotelListPage from './pages/HotelListPage';
+import AuthPage from './pages/AuthPage';
 
-export const App = () => {
+function App() {
   return (
-    <div>App</div>
-  )
+    <Home />
+  );
 }
+
+export default App;
