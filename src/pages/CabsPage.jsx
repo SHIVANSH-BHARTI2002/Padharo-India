@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import CabCard from '../components/CabCard';
-import CabSearchBox from '../components/CabSearchBox';
+import CabCard from '../components/cards/CabCard';
+import CabSearchBox from '../components/search box/CabSearchBox';
 import heroImage from '../assets/car2.jpg'; // A suitable background
 
 const allCabs = [

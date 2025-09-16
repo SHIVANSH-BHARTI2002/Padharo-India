@@ -1,6 +1,6 @@
 import React from 'react';
-import SearchBox from '../components/SearchBox';
-import PlaceCard from '../components/PlaceCard';
+import SearchBox from '../components/search box/SearchBox';
+import PlaceCard from '../components/cards/PlaceCard';
 import Feature from '../components/Feature';
 import Destinations from '../components/Destinations';
 

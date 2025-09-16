@@ -1,6 +1,6 @@
 import React from 'react';
-import GuideSearchBox from '../components/GuideSearchBox';
-import GuideCard from '../components/GuideProfileCard';
+import GuideSearchBox from '../components/search box/GuideSearchBox';
+import GuideCard from '../components/cards/GuideProfileCard';
 
 import heroImage from '../assets/map.jpg';
 
