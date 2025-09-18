@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-const LoginForm = ({ onToggle }) => {
+const LoginForm = ({ onToggle, userType, setUserType }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -17,7 +17,7 @@ const LoginForm = ({ onToggle }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Login submitted:', formData);
+        console.log('Login submitted:', formData, 'as', userType);
     };
 
     return (
@@ -25,7 +25,7 @@ const LoginForm = ({ onToggle }) => {
             {/* Header */}
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
-                <p className="text-gray-600">Sign in to continue your journey</p>
+                <p className="text-gray-600">Sign in to continue your journey as a {userType}</p>
             </div>
 
             {/* Form */}
@@ -151,11 +151,9 @@ const LoginForm = ({ onToggle }) => {
                 >
                     Sign up now
                 </button>
-                     </p>
+            </p>
         </div>
-    )
-}
+    );
+};
 
 export default LoginForm;
-
-        

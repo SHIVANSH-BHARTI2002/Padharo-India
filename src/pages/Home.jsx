@@ -66,7 +66,7 @@ const Home = () => {
         <div className="min-h-screen bg-gray-50">
             {/* Hero Section */}
             <header 
-                className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
+                className="relative h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat pt-16 lg:pt-20"
                 style={{ backgroundImage: `url(${heroBackground})` }}
             >
                 {/* Overlay */}

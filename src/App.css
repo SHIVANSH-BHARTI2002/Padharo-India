@@ -40,3 +40,13 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #c8962b, #b8852a);
 }
+
+/* Hide scrollbar for custom scrollable element */
+.custom-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
