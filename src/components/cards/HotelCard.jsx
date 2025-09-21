@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { 
-    StarIcon, 
-    MapPinIcon, 
+import { Link } from 'react-router-dom';
+import {
+    StarIcon,
+    MapPinIcon,
     HeartIcon,
     CurrencyRupeeIcon,
     CheckCircleIcon,
@@ -20,15 +21,15 @@ const HotelCard = ({ image, rating, name, location, description, features, price
             <div className="flex flex-col lg:flex-row">
                 {/* Image Section */}
                 <div className="relative lg:w-80 h-64 lg:h-auto overflow-hidden">
-                    <img 
-                        src={image} 
-                        alt={name} 
+                    <img
+                        src={image}
+                        alt={name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    
+
                     {/* Image Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
+
                     {/* Action Buttons */}
                     <div className="absolute top-4 right-4 flex space-x-2">
                         <button
@@ -58,11 +59,11 @@ const HotelCard = ({ image, rating, name, location, description, features, price
                     {/* Header */}
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
-                            <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                            <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 group-hover:text-amber-500 transition-colors duration-300">
                                 {name}
                             </h2>
                             <div className="flex items-center text-gray-600">
-                                <MapPinIcon className="h-4 w-4 mr-1 text-blue-500" />
+                                <MapPinIcon className="h-4 w-4 mr-1 text-amber-500" />
                                 <span className="font-medium">{location}</span>
                             </div>
                         </div>
@@ -83,11 +84,11 @@ const HotelCard = ({ image, rating, name, location, description, features, price
                                 </div>
                             ))}
                         </div>
-                        
+
                         {features.length > 3 && (
                             <button
                                 onClick={() => setShowAllFeatures(!showAllFeatures)}
-                                className="mt-3 text-blue-600 hover:text-blue-500 font-medium text-sm transition-colors duration-300"
+                                className="mt-3 text-amber-500 hover:text-amber-500 font-medium text-sm transition-colors duration-300"
                             >
                                 {showAllFeatures ? 'Show Less' : `+${features.length - 3} More`}
                             </button>
@@ -109,10 +110,12 @@ const HotelCard = ({ image, rating, name, location, description, features, price
 
                         {/* Actions */}
                         <div className="flex space-x-3">
-                            <button className="px-6 py-2 border-2 border-blue-500 text-blue-500 rounded-full font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300">
-                                View Details
-                            </button>
-                            <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-2 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <Link to={`/hotels/${name}`}>
+                                <button className="px-6 py-2 border-2 border-amber-500 text-amber-500 rounded-full font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300">
+                                    View Details
+                                </button>
+                            </Link>
+                            <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-500 hover:to-orange-600 text-white px-8 py-2 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                                 Book Now
                             </button>
                         </div>
@@ -121,7 +124,7 @@ const HotelCard = ({ image, rating, name, location, description, features, price
             </div>
 
             {/* Bottom Accent Line */}
-            <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-600 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
         </div>
     );
 };

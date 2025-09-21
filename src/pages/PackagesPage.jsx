@@ -4,6 +4,8 @@ import PackageSearchBox from '../components/search box/PackageSearchBox';
 import heroImg from '../assets/hawa-mahal.jpg';
 import keralaImg from '../assets/istockphoto-1347088244-612x612.jpg';
 import goldenTempleImg from '../assets/golden-temple.jpg';
+import laddakImg from '../assets/laddak.jpg';
+
 
 const allPackages = [
     {
@@ -27,7 +29,7 @@ const allPackages = [
         price: 35000,
     },
     {
-        image: heroImg,
+        image: laddakImg,
         name: 'Majestic Ladakh Adventure',
         places: ['Leh', 'Nubra Valley', 'Pangong Lake'],
         nights: 8,

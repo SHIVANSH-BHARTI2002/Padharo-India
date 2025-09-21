@@ -1,11 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import CabCard from '../components/cards/CabCard';
 import CabSearchBox from '../components/search box/CabSearchBox';
-import heroImage from '../assets/car2.jpg'; // A suitable background
+import heroImage from '../assets/car2.jpg'; 
+import swift from '../assets/swift.png';
+import innova from '../assets/innova.png';
+import honda_city from '../assets/honda_city.png';
+import marazzo from '../assets/marazzo.png';
 
 const allCabs = [
     {
-        image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80',
+        image: swift,
         name: 'Maruti Swift Dzire',
         driver: 'Ramesh Singh',
         rating: 4.8,
@@ -15,7 +19,7 @@ const allCabs = [
         type: 'Sedan'
     },
     {
-        image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80',
+        image: innova,
         name: 'Toyota Innova Crysta',
         driver: 'Suresh Verma',
         rating: 4.9,
@@ -25,7 +29,7 @@ const allCabs = [
         type: 'SUV'
     },
     {
-        image: 'https://images.unsplash.com/photo-1616422285855-f8525b061d33?w=800&q=80',
+        image:marazzo,
         name: 'Mahindra Marazzo',
         driver: 'Vikram Rathore',
         rating: 4.7,
@@ -35,7 +39,7 @@ const allCabs = [
         type: 'MPV'
     },
     {
-        image: 'https://images.unsplash.com/photo-1590362891991-0119e5f56b6c?w=800&q=80',
+        image: honda_city,
         name: 'Honda City',
         driver: 'Anil Kapoor',
         rating: 4.6,

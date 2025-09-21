@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import CabsPage from './pages/CabsPage';
 import HotelListPage from './pages/HotelListPage';
+import HotelDetailsPage from './pages/HotelDetailsPage';
 import GuidesPage from './pages/GuidesPage';
 import PackagesPage from './pages/PackagesPage';
 import Navbar from './components/Navbar';
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/cabs" element={<CabsPage />} />
           <Route path="/hotels" element={<HotelListPage />} />
+          <Route path="/hotels/:hotelName" element={<HotelDetailsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
           <Route path="/packages" element={<PackagesPage />} />
         </Routes>
