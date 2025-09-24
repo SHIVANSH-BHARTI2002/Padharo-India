@@ -1,7 +1,5 @@
 import React from "react";
-import { Link, useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { useParams } from "react-router-dom";
 import RoomCard from "../components/cards/RoomCard";
 import {
   FaStar,
@@ -86,10 +84,21 @@ const HotelDetailsPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans pt-24">
+    <div className="bg-gray-50 min-h-screen font-sans">
+      {/* Background Hero */}
+      <div className="relative h-72 md:h-80">
+        <img
+          src={hotelExterior}
+          alt="Hotel background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/80" />
+      </div>
+
+      <div className="relative -mt-48 md:-mt-40">
       {/* Sticky Booking Bar */}
       
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-lg border-t border-gray-200 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-lg border-t border-gray-200 z-40">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div>
             <p className="text-sm text-gray-500">
@@ -114,7 +123,7 @@ const HotelDetailsPage = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 md:px-8 mt-6 relative z-10 ">
+      <section className="container mx-auto px-4 md:px-8 mt-6">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h1 className="text-4xl font-bold text-gray-900">
             {hotelData.name}
@@ -227,6 +236,7 @@ const HotelDetailsPage = () => {
           loading="lazy"
         ></iframe>
       </section>
+      </div>
     </div>
   );
 };
