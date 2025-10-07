@@ -1,12 +1,46 @@
-# React + Vite
+# Padharo India
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Padharo India is a comprehensive web application designed to streamline the process of booking various travel services across India. This platform serves as a one-stop solution for travelers, offering functionalities to book cabs, hotels, tour guides, and curated tour packages. The user-friendly interface is built with modern web technologies to ensure a seamless and engaging experience.
 
-Currently, two official plugins are available:
+## Features ✨
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **Cab Booking:** Easily search and book from a variety of cabs, including Sedans, SUVs, and MPVs.
+* **Hotel Reservations:** Discover and book hotels with detailed information, including amenities, ratings, and pricing.
+* **Tour Guide Services:** Find and hire experienced local tour guides with specialties in history, cuisine, and more.
+* **Tour Packages:** Explore and book curated tour packages for popular destinations like the Golden Triangle and Kerala Backwaters.
+* **User Authentication:** Secure sign-up and login functionality for a personalized experience.
+* **Responsive Design:** A fully responsive layout that works seamlessly on desktops, tablets, and mobile devices.
 
-## Expanding the ESLint configuration
+## Tech Stack 💻
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* **Frontend:** React, React Router
+* **Styling:** Tailwind CSS
+* **Build Tool:** Vite
+* **Icons:** Heroicons, Lucide React
+
+## Getting Started 🚀
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+* Node.js (version 14 or higher)
+* npm or yarn
+
+### Installation
+
+1.  Clone the repo
+    ```sh
+    git clone [https://github.com/your-username/padharo-india.git](https://github.com/your-username/padharo-india.git)
+    ```
+2.  Install NPM packages
+    ```sh
+    npm install
+    ```
+
+### Running the Application
+
+To run the app in development mode, execute the following command:
+
+```sh
+npm run dev
