@@ -24,7 +24,7 @@ To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
-* Node.js (version 14 or higher)
+* MySql
 * npm or yarn
 
 ### Installation
