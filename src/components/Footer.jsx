@@ -46,7 +46,7 @@ const Footer = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center text-gray-300">
                                     <MapPinIcon className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
-                                    <span>Raisinghnagar, Rajasthan, India</span>
+                                    <span>Bhopal, Madhya Pradesh, India</span>
                                 </div>
                                 <div className="flex items-center text-gray-300">
                                     <PhoneIcon className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />

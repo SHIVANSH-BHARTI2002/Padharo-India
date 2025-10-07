@@ -3,13 +3,22 @@ import GuideSearchBox from '../components/search box/GuideSearchBox';
 import GuideCard from '../components/cards/GuideProfileCard';
 
 import heroImage from '../assets/map.jpg';
+<<<<<<< HEAD
+=======
+import man from '../assets/man.png';
+import women from '../assets/women.png';
+>>>>>>> origin/main
 
 const GuidesPage = () => {
     const guides = [
         {
             id: 1,
             name: 'Rajesh Kumar',
+<<<<<<< HEAD
             image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+=======
+            image: man,
+>>>>>>> origin/main
             location: 'Jaipur, Rajasthan',
             rating: 4.9,
             description: 'Passionate storyteller with deep expertise in Rajasthani culture. I bring ancient palaces to life with engaging narratives.',
@@ -22,7 +31,11 @@ const GuidesPage = () => {
         {
             id: 2,
             name: 'Priya Sharma',
+<<<<<<< HEAD
             image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
+=======
+            image: women,
+>>>>>>> origin/main
             location: 'Agra, Uttar Pradesh',
             rating: 4.8,
             description: 'An avid photographer and history enthusiast, offering unique tours of Agra\'s iconic landmarks. Let\'s capture the beauty of the Taj Mahal!',
@@ -35,7 +48,11 @@ const GuidesPage = () => {
         {
             id: 3,
             name: 'Amit Patel',
+<<<<<<< HEAD
             image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop&crop=face',
+=======
+            image: man,
+>>>>>>> origin/main
             location: 'Varanasi, Uttar Pradesh',
             rating: 4.9,
             description: 'Born and raised in Varanasi, I provide immersive spiritual experiences. Discover the ancient traditions and rituals of this holy city.',

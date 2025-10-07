@@ -24,11 +24,21 @@ const GuideCard = ({ guide }) => {
                     <img
                         src={image}
                         alt={name}
+<<<<<<< HEAD
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute top-4 right-4 flex space-x-2">
                         <button
+=======
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"
+                        // className="w-full h-full object-fill group-hover:scale-110 transition-transform duration-700"
+                    
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute top-4 right-4 flex space-x-2">
+                        {/* <button
+>>>>>>> origin/main
                             onClick={() => setIsFavorite(!isFavorite)}
                             className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all duration-300"
                         >
@@ -40,7 +50,11 @@ const GuideCard = ({ guide }) => {
                         </button>
                         <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all duration-300">
                             <ShareIcon className="h-5 w-5 text-white" />
+<<<<<<< HEAD
                         </button>
+=======
+                        </button> */}
+>>>>>>> origin/main
                     </div>
                     <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
                         <StarIcon className="h-4 w-4 text-yellow-500 fill-current" />
