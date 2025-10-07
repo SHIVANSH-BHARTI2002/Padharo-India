@@ -80,8 +80,11 @@ const HotelListPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
                 <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                     <div className="text-center mb-10">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            Find Your Perfect Stay
+                             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                            Find Your Perfect
+                            <span className="block bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                                Stay
+                            </span>
                         </h1>
                         <p className="text-xl text-gray-200 max-w-2xl mx-auto">
                             Discover amazing hotels with the best prices and premium amenities.
