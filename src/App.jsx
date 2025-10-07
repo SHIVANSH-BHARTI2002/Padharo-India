@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
@@ -7,6 +6,9 @@ import LoginForm from "./components/LoginForm.jsx";
 import SignUpForm from "./components/SignUpForm.jsx";
 import Home from "./pages/Home.jsx";
 import CabsPage from "./pages/CabsPage.jsx";
+import HotelListPage from "./pages/HotelListPage.jsx";
+import HotelDetailsPage from "./pages/HotelDetailsPage.jsx";
+import GuidesPage from "./pages/GuidesPage.jsx";
 import PackagesPage from "./pages/PackagesPage.jsx";
 import { AuthContext } from "./context/AuthContext.jsx";
 import "./App.css";
@@ -22,7 +24,6 @@ function App() {
       setIsAuthOpen(false);
     }
   }, [token]);
-
 
   const handleAuthToggle = () => {
     setIsLoginView(!isLoginView);
@@ -57,39 +58,7 @@ function App() {
         </div>
       )}
 
-      <main className="pt-20">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/cabs" element={<CabsPage />} />
-          <Route path="/packages" element={<PackagesPage />} />
-        </Routes>
-      </main>
-      
-      <Footer />
-    </BrowserRouter>
-=======
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import CabsPage from './pages/CabsPage';
-import HotelListPage from './pages/HotelListPage';
-import HotelDetailsPage from './pages/HotelDetailsPage';
-import GuidesPage from './pages/GuidesPage';
-import PackagesPage from './pages/PackagesPage';
-import Navbar from './components/Navbar';
-import AuthModal from './components/AuthModal';
-import Footer from './components/Footer'; // Import the new footer
-import './App.css';
-
-function App() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  return (
-    <Router>
-      <Navbar onLoginClick={() => setIsModalOpen(true)} />
-      {isModalOpen && <AuthModal onClose={() => setIsModalOpen(false)} />}
-
-      <main className="main-content">
+      <main className="main-content pt-20">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/cabs" element={<CabsPage />} />
@@ -99,10 +68,9 @@ function App() {
           <Route path="/packages" element={<PackagesPage />} />
         </Routes>
       </main>
-
-      <Footer /> {/* Add the Footer component here */}
-    </Router>
->>>>>>> origin/main
+      
+      <Footer />
+    </BrowserRouter>
   );
 }
 
