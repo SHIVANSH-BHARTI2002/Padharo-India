@@ -9,6 +9,11 @@ import heroBackground from '../assets/hero-background.jpg';
 import ctaBackground from '../assets/cta-background.jpg';
 import fort from '../assets/fort.jpg';
 import tajMahal from '../assets/tajmahal.jpg';
+import temple from '../assets/golden-temple.jpg';
+import gateway from '../assets/gateway-of-india.jpg';
+import indiagate from '../assets/india-gate.jpg';
+import palace from '../assets/mysore-palace.jpg';
+
 
 const Home = () => {
     const places = [
@@ -29,7 +34,7 @@ const Home = () => {
             price: '1500' 
         },
         { 
-            image: tajMahal, 
+            image: temple, 
             rating: '4.8', 
             title: 'Golden Temple', 
             location: 'Amritsar, Punjab', 
@@ -37,7 +42,7 @@ const Home = () => {
             price: '1800' 
         },
         { 
-            image: tajMahal, 
+            image: indiagate, 
             rating: '4.7', 
             title: 'India Gate', 
             location: 'New Delhi, Delhi', 
@@ -45,7 +50,7 @@ const Home = () => {
             price: '1200' 
         },
         { 
-            image: tajMahal, 
+            image: palace, 
             rating: '4.4', 
             title: 'Mysore Palace', 
             location: 'Mysore, Karnataka', 
@@ -53,7 +58,7 @@ const Home = () => {
             price: '1600' 
         },
         { 
-            image: tajMahal, 
+            image: gateway, 
             rating: '4.9', 
             title: 'Gateway of India', 
             location: 'Mumbai, Maharashtra', 
