@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import CabsPage from './pages/CabsPage';
+import CabDetailsPage from './pages/CabDetailsPage';
 import HotelListPage from './pages/HotelListPage';
 import HotelDetailsPage from './pages/HotelDetailsPage';
 import GuidesPage from './pages/GuidesPage';
+import GuideDetailsPage from './pages/GuideDetailsPage'; // Import the new page
 import PackagesPage from './pages/PackagesPage';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
-import Footer from './components/Footer'; // Import the new footer
+import Footer from './components/Footer'; 
 import './App.css';
-import CabDetailsPage from './pages/CabDetailsPage';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,11 +29,12 @@ function App() {
           <Route path="/hotels" element={<HotelListPage />} />
           <Route path="/hotels/:hotelName" element={<HotelDetailsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/guides/:guideId" element={<GuideDetailsPage />} /> {/* Add this new route */}
           <Route path="/packages" element={<PackagesPage />} />
         </Routes>
       </main>
 
-      <Footer /> {/* Add the Footer component here */}
+      <Footer />
     </Router>
   );
 }

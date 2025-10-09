@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import {
     StarIcon,
     MapPinIcon,
@@ -13,7 +14,7 @@ import {
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
 const GuideCard = ({ guide }) => {
-    const { image, rating, name, location, description, languages, specialties, pricePerHour, experience, toursCompleted } = guide;
+    const { id, image, rating, name, location, description, languages, specialties, pricePerHour, experience, toursCompleted } = guide;
     const [isFavorite, setIsFavorite] = useState(false);
 
     return (
@@ -25,24 +26,9 @@ const GuideCard = ({ guide }) => {
                         src={image}
                         alt={name}
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"
-                        // className="w-full h-full object-fill group-hover:scale-110 transition-transform duration-700"
-                    
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute top-4 right-4 flex space-x-2">
-                        {/* <button
-                            onClick={() => setIsFavorite(!isFavorite)}
-                            className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all duration-300"
-                        >
-                            {isFavorite ? (
-                                <HeartIconSolid className="h-5 w-5 text-red-500" />
-                            ) : (
-                                <HeartIcon className="h-5 w-5 text-white" />
-                            )}
-                        </button>
-                        <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all duration-300">
-                            <ShareIcon className="h-5 w-5 text-white" />
-                        </button> */}
                     </div>
                     <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
                         <StarIcon className="h-4 w-4 text-yellow-500 fill-current" />
@@ -125,9 +111,9 @@ const GuideCard = ({ guide }) => {
                             </div>
                         </div>
                         <div className="flex space-x-3">
-                            <button className="px-6 py-2 border-2 border-amber-500 text-amber-500 rounded-full font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300">
+                            <Link to={`/guides/${id}`} className="px-6 py-2 border-2 border-amber-500 text-amber-500 rounded-full font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300">
                                 View Profile
-                            </button>
+                            </Link>
                             <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-2 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                                 Book Now
                             </button>
