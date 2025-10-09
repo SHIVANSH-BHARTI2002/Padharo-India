@@ -123,7 +123,7 @@ const HotelDetailsPage = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 md:px-8 mt-6">
+      <section id="overview" className="container mx-auto px-4 md:px-8 mt-6">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h1 className="text-4xl font-bold text-gray-900">
             {hotelData.name}
@@ -142,12 +142,13 @@ const HotelDetailsPage = () => {
           <div className="mt-6 border-b flex gap-8 text-gray-600 font-medium">
             {["Overview", "Rooms", "Amenities", "Reviews", "Location"].map(
               (tab, i) => (
-                <button
+                <a
                   key={i}
+                  href={`#${tab.toLowerCase()}`}
                   className="pb-3 border-b-2 border-transparent hover:border-amber-600 hover:text-amber-600 transition"
                   >
                   {tab}
-                </button>
+                </a>
               )
             )}
           </div>
@@ -180,7 +181,7 @@ const HotelDetailsPage = () => {
       </section>
 
       {/* Rooms Section */}
-      <section className="container mx-auto px-4 md:px-8 py-16">
+      <section id="rooms" className="container mx-auto px-4 md:px-8 py-16">
         <h2 className="text-3xl font-bold mb-6">Available Rooms</h2>
         <div className="space-y-8">
           {hotelData.roomOptions.map((room, i) => (
@@ -190,7 +191,7 @@ const HotelDetailsPage = () => {
       </section>
 
       {/* Amenities */}
-      <section className="container mx-auto px-4 md:px-8 py-16 bg-white rounded-2xl shadow-md">
+      <section id="amenities" className="container mx-auto px-4 md:px-8 py-16 bg-white rounded-2xl shadow-md">
         <h2 className="text-3xl font-bold mb-6">Amenities</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {hotelData.amenities.map((a, i) => (
@@ -206,7 +207,7 @@ const HotelDetailsPage = () => {
       </section>
 
       {/* Reviews */}
-      <section className="container mx-auto px-4 md:px-8 py-16">
+      <section id="reviews" className="container mx-auto px-4 md:px-8 py-16">
         <h2 className="text-3xl font-bold mb-6">Guest Reviews</h2>
         <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
           <div className="flex items-center gap-3">
@@ -225,7 +226,7 @@ const HotelDetailsPage = () => {
       </section>
 
       {/* Location */}
-      <section className="container mx-auto px-4 md:px-8 py-16">
+      <section id="location" className="container mx-auto px-4 md:px-8 py-16">
         <h2 className="text-3xl font-bold mb-6">Location</h2>
         <p className="text-gray-600 mb-4">{hotelData.location}</p>
         <iframe

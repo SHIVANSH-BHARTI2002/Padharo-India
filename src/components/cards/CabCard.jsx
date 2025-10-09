@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { StarIcon, UserIcon, CurrencyRupeeIcon, UsersIcon, TruckIcon } from '@heroicons/react/24/solid';
 
 const CabCard = ({ cab }) => {
@@ -61,9 +62,11 @@ const CabCard = ({ cab }) => {
 
                 {/* Footer Actions */}
                 <div className="flex items-center space-x-4">
-                    <button className="flex-1 px-6 py-3 border-2 border-amber-500 text-amber-500 rounded-xl font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300 text-center">
-                        More Details
-                    </button>
+                    <Link to={`/cabs/${name}`} className="flex-1">
+                        <button className="w-full px-6 py-3 border-2 border-amber-500 text-amber-500 rounded-xl font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300 text-center">
+                            More Details
+                        </button>
+                    </Link>
                     <button className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl text-center">
                         Book Now
                     </button>

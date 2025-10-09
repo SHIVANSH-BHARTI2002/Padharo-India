@@ -38,7 +38,7 @@ const RoomCard = ({ room }) => {
                 +₹{room.taxes.toLocaleString()} taxes & fees
               </p>
             </div>
-            <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition">
+            <button className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:opacity-90 transition">
               Select
             </button>
           </div>
