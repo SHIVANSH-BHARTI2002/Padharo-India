@@ -9,13 +9,14 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('authtoken') || null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [otpRequiredEmail, setOtpRequiredEmail] = useState(null);
 
-    // Set up axios instance for API calls
+    // Axios instance for API calls
     const api = axios.create({
         baseURL: import.meta.env.VITE_API_BASE_URL,
     });
 
-    // Effect to check for token in localStorage on initial load
+    // Check token from localStorage on initial load
     useEffect(() => {
         const storedToken = localStorage.getItem('authtoken');
         if (storedToken) {
@@ -30,6 +31,8 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post('/api/auth/createuser', userData);
             setLoading(false);
+            // Set email for OTP verification
+            setOtpRequiredEmail(userData.email);
             return response.data;
         } catch (err) {
             setLoading(false);
@@ -38,23 +41,36 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Login Function - UPDATED
+    // OTP Verification Function
+    const verifyOtp = async (email, otp) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.post('/api/auth/verify-otp', { email, otp });
+            setLoading(false);
+            // OTP verified → clear OTP state
+            setOtpRequiredEmail(null);
+            return response.data; // { message, authtoken, user }
+        } catch (err) {
+            setLoading(false);
+            setError(err.response?.data?.message || 'OTP verification failed.');
+            throw err;
+        }
+    };
+
+    // Login Function
     const login = async (credentials) => {
         setLoading(true);
         setError(null);
         try {
             const response = await api.post('/api/auth/login', credentials);
-            
-            // THE FIX: Check for the 'authtoken' field instead of 'success'
             if (response.data.authtoken) {
                 const { authtoken } = response.data;
                 localStorage.setItem('authtoken', authtoken);
                 setToken(authtoken);
-                setLoading(false); // This will now run correctly
+                setLoading(false);
                 return response.data;
             } else {
-                // Handle cases where the API call succeeds but login fails (e.g., wrong password)
-                // This part might not be hit if your API returns a 401 error, which is handled by catch.
                 throw new Error(response.data.message || 'Login failed');
             }
         } catch (err) {
@@ -70,14 +86,17 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
     };
 
-    // The value provided to consuming components
+    // Context value
     const authContextValue = {
         token,
         loading,
         error,
         login,
         signup,
+        verifyOtp,         // ✅ Added verifyOtp
         logout,
+        otpRequiredEmail,
+        setOtpRequiredEmail,
     };
 
     return (

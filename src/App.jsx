@@ -1,76 +1,68 @@
 import React, { useState, useContext, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
-import LoginForm from "./components/LoginForm.jsx";
-import SignUpForm from "./components/SignUpForm.jsx";
 import Home from "./pages/Home.jsx";
 import CabsPage from "./pages/CabsPage.jsx";
+import CabDetailsPage from "./pages/CabDetailsPage.jsx";
 import HotelListPage from "./pages/HotelListPage.jsx";
 import HotelDetailsPage from "./pages/HotelDetailsPage.jsx";
 import GuidesPage from "./pages/GuidesPage.jsx";
+import GuideDetailsPage from "./pages/GuideDetailsPage.jsx";
 import PackagesPage from "./pages/PackagesPage.jsx";
+import AuthPage from "./pages/AuthPage.jsx"; // ✅ Unified Auth Modal
 import { AuthContext } from "./context/AuthContext.jsx";
 import "./App.css";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isLoginView, setIsLoginView] = useState(true);
   const { token } = useContext(AuthContext);
 
-  // This effect closes the modal automatically after a successful login
+  // ✅ Automatically close auth modal after successful login
   useEffect(() => {
-    if (token) {
-      setIsAuthOpen(false);
-    }
+    if (token) setIsAuthOpen(false);
   }, [token]);
 
-  const handleAuthToggle = () => {
-    setIsLoginView(!isLoginView);
-  };
-
   const openLoginModal = () => {
-    setIsLoginView(true);
     setIsAuthOpen(true);
   };
 
   return (
-    <BrowserRouter>
-      {/* The Navbar needs the onLoginClick prop to open the modal */}
+    <Router>
+      {/* ✅ Navbar with login trigger */}
       <Navbar onLoginClick={openLoginModal} />
-      
+
+      {/* ✅ Auth Modal */}
       {isAuthOpen && (
-        // This is the new modal overlay with the blur effect
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm"
           onClick={() => setIsAuthOpen(false)}
         >
-          <div 
+          <div
             className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4"
-            onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside the form
+            onClick={(e) => e.stopPropagation()}
           >
-            {isLoginView ? (
-              <LoginForm onToggle={handleAuthToggle} />
-            ) : (
-              <SignUpForm onToggle={handleAuthToggle} />
-            )}
+            <AuthPage /> {/* ✅ Handles Login, Signup, and OTP */}
           </div>
         </div>
       )}
 
+      {/* ✅ Routes */}
       <main className="main-content pt-20">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/cabs" element={<CabsPage />} />
+          <Route path="/cabs/:cabName" element={<CabDetailsPage />} /> {/* ✅ Added */}
           <Route path="/hotels" element={<HotelListPage />} />
           <Route path="/hotels/:hotelName" element={<HotelDetailsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/guides/:guideId" element={<GuideDetailsPage />} /> {/* ✅ Added */}
           <Route path="/packages" element={<PackagesPage />} />
         </Routes>
       </main>
-      
+
       <Footer />
-    </BrowserRouter>
+    </Router>
   );
 }
 
