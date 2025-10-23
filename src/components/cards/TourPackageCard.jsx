@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MapPinIcon, MoonIcon, UserIcon, CurrencyRupeeIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
 const TourPackageCard = ({ pkg }) => {
     const { image, name, places, nights, description, included, price } = pkg;
+    const packageId = name.replace(/\s+/g, '-');
 
     return (
         <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:-translate-y-2 transition-all duration-500 w-full">
@@ -60,9 +62,11 @@ const TourPackageCard = ({ pkg }) => {
 
                 {/* Footer Actions */}
                 <div className="flex items-center space-x-4">
-                    <button className="flex-1 px-6 py-3 border-2 border-amber-500 text-amber-500 rounded-xl font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300 text-center">
-                        View Details
-                    </button>
+                    <Link to={`/packages/${packageId}`} className="flex-1">
+                        <button className="w-full px-6 py-3 border-2 border-amber-500 text-amber-500 rounded-xl font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300 text-center">
+                            View Details
+                        </button>
+                    </Link>
                     <button className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl text-center">
                         Book Now
                     </button>

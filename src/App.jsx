@@ -6,8 +6,9 @@ import CabDetailsPage from './pages/CabDetailsPage';
 import HotelListPage from './pages/HotelListPage';
 import HotelDetailsPage from './pages/HotelDetailsPage';
 import GuidesPage from './pages/GuidesPage';
-import GuideDetailsPage from './pages/GuideDetailsPage'; // Import the new page
+import GuideDetailsPage from './pages/GuideDetailsPage';
 import PackagesPage from './pages/PackagesPage';
+import PackageDetailsPage from './pages/PackageDetailsPage'; // Import the new page
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer'; 
@@ -29,8 +30,9 @@ function App() {
           <Route path="/hotels" element={<HotelListPage />} />
           <Route path="/hotels/:hotelName" element={<HotelDetailsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
-          <Route path="/guides/:guideId" element={<GuideDetailsPage />} /> {/* Add this new route */}
+          <Route path="/guides/:guideId" element={<GuideDetailsPage />} />
           <Route path="/packages" element={<PackagesPage />} />
+          <Route path="/packages/:packageId" element={<PackageDetailsPage />} /> {/* Add this new route */}
         </Routes>
       </main>
 
