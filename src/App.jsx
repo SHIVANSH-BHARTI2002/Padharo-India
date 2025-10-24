@@ -8,10 +8,12 @@ import HotelDetailsPage from './pages/HotelDetailsPage';
 import GuidesPage from './pages/GuidesPage';
 import GuideDetailsPage from './pages/GuideDetailsPage';
 import PackagesPage from './pages/PackagesPage';
-import PackageDetailsPage from './pages/PackageDetailsPage'; // Import the new page
+import PackageDetailsPage from './pages/PackageDetailsPage';
+import UserProfilePage from './pages/UserProfilePage';
+import DriverProfilePage from './pages/DriverProfilePage'; // <-- Import the new page
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
-import Footer from './components/Footer'; 
+import Footer from './components/Footer';
 import './App.css';
 
 function App() {
@@ -32,7 +34,9 @@ function App() {
           <Route path="/guides" element={<GuidesPage />} />
           <Route path="/guides/:guideId" element={<GuideDetailsPage />} />
           <Route path="/packages" element={<PackagesPage />} />
-          <Route path="/packages/:packageId" element={<PackageDetailsPage />} /> {/* Add this new route */}
+          <Route path="/packages/:packageId" element={<PackageDetailsPage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/driver-profile" element={<DriverProfilePage />} /> {/* <-- Add the new route */}
         </Routes>
       </main>
 
