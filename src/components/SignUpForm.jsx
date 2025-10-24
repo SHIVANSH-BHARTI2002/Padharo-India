@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline'; // Added BuildingOffice2Icon
 import OtpVerification from './OtpVerification'; // Import the new OTP component
 
 const SignUpForm = ({ onToggle, userType, setUserType }) => {
@@ -12,6 +12,8 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
         mobile: '',
         password: ''
     });
+    // Add state for business type
+    const [businessType, setBusinessType] = useState('');
     const [showOtp, setShowOtp] = useState(false);
 
     const handleInputChange = (e) => {
@@ -21,13 +23,30 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
         });
     };
 
+    // Handler for business type dropdown
+    const handleBusinessTypeChange = (e) => {
+        setBusinessType(e.target.value);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!acceptTerms) {
             alert('Please accept the terms and conditions');
             return;
         }
-        console.log('Sign up submitted:', formData, 'as', userType);
+        // Include businessType if userType is 'Business'
+        const submissionData = {
+            ...formData,
+            userType: userType,
+            ...(userType === 'Business' && { businessType: businessType })
+        };
+
+        if (userType === 'Business' && !businessType) {
+            alert('Please select your business type');
+            return;
+        }
+
+        console.log('Sign up submitted:', submissionData);
         // Here you would typically send the data to your backend to send an OTP
         setShowOtp(true); // Show OTP form
     };
@@ -48,7 +67,8 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
+                    {/* ... (First Name and Last Name inputs remain the same) ... */}
+                     <div>
                         <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
                             First Name
                         </label>
@@ -92,7 +112,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                 </div>
 
                 {/* Email Field */}
-                <div>
+                 <div>
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                         Email Address
                     </label>
@@ -113,8 +133,9 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                     </div>
                 </div>
 
+
                 {/* Mobile Number Field */}
-                <div>
+                 <div>
                     <label htmlFor="mobile" className="block text-sm font-semibold text-gray-700 mb-2">
                         Mobile Number
                     </label>
@@ -137,7 +158,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
 
 
                 {/* Password Field */}
-                <div>
+                 <div>
                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                         Password
                     </label>
@@ -169,8 +190,38 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                     </div>
                 </div>
 
+
+                {/* --- Business Type Dropdown (Conditional) --- */}
+                {userType === 'Business' && (
+                    <div>
+                        <label htmlFor="businessType" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Type of Business
+                        </label>
+                        <div className="relative">
+                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <BuildingOffice2Icon className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <select
+                                id="businessType"
+                                name="businessType"
+                                required
+                                value={businessType}
+                                onChange={handleBusinessTypeChange}
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 bg-gray-50 focus:bg-white appearance-none"
+                            >
+                                <option value="" disabled>Select your business type</option>
+                                <option value="Hotel">Hotel</option>
+                                <option value="Guide">Tour Guide</option>
+                                <option value="Cab">Cab Service</option>
+                            </select>
+                            {/* You might want a dropdown icon here */}
+                        </div>
+                    </div>
+                )}
+                {/* --- End of Business Type Dropdown --- */}
+
                 {/* Terms and Conditions */}
-                <div className="flex items-start space-x-3">
+                 <div className="flex items-start space-x-3">
                     <div className="flex items-center h-6">
                         <input
                             id="terms"
@@ -195,7 +246,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                 <button
                     type="submit"
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    disabled={!acceptTerms}
+                    disabled={!acceptTerms || (userType === 'Business' && !businessType)}
                 >
                     Create Account
                 </button>
