@@ -9,8 +9,8 @@ import {
     // Import update/delete controllers later
 } from '../controllers/hotel.controller.js';
 // --- Import Middleware (Uncomment when implemented) ---
-// import { authenticateToken } from '../middleware/auth.middleware.js';
-// import { checkRole, checkBusinessType } from '../middleware/role.middleware.js';
+// --- Import Middleware ---
+import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js'; // <-- CORRECT FILE
 // ----------------------------------------------------
 
 const router = express.Router();
@@ -69,9 +69,9 @@ router.get(
 router.post(
     '/',
     // --- Apply Middleware ---
-    // authenticateToken,
-    // checkRole(['Business']),
-    // checkBusinessType(['Hotel']),
+    authenticateToken,
+    checkRole(['Business']),
+    checkBusinessType(['Hotel']),
     // ----------------------
     [ // Validation for request body
         body('name').trim().notEmpty().withMessage('Hotel name is required.').isLength({ max: 255 }),
@@ -92,9 +92,9 @@ router.post(
 router.post(
     '/:hotelId/rooms',
     // --- Apply Middleware ---
-    // authenticateToken,
-    // checkRole(['Business']),
-    // checkBusinessType(['Hotel']),
+    authenticateToken,
+    checkRole(['Business']),
+    checkBusinessType(['Hotel']),
     // // Add ownership check middleware here if desired
     // ----------------------
     [ // Validation for request body and param

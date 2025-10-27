@@ -17,7 +17,7 @@ import cabRoutes from './api/routes/cab.routes.js';
 import hotelRoutes from './api/routes/hotel.routes.js';
 import guideRoutes from './api/routes/guide.routes.js';
 import packageRoutes from './api/routes/package.routes.js';
-// import bookingRoutes from './api/routes/booking.routes.js';
+import bookingRoutes from './api/routes/booking.routes.js';
 // import reviewRoutes from './api/routes/review.routes.js';
 // -----------------------------------------------------------
 
@@ -50,7 +50,7 @@ app.use('/api/cabs', cabRoutes);
 app.use('/api/hotels', hotelRoutes); // Includes room routes nested or separate
 app.use('/api/guides', guideRoutes);
 app.use('/api/packages', packageRoutes);
-// app.use('/api/bookings', bookingRoutes); // Needs authentication
+app.use('/api/bookings', bookingRoutes); // Needs authentication
 // app.use('/api/reviews', reviewRoutes);   // Needs authentication
 // ------------------------------------
 

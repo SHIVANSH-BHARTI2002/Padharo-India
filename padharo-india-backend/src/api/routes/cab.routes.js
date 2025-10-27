@@ -7,8 +7,8 @@ import {
     // Import other controllers (updateCab, deleteCab, etc.) later
 } from '../controllers/cab.controller.js';
 // --- Import Middleware (Uncomment when implemented) ---
-// import { authenticateToken } from '../middleware/auth.middleware.js';
-// import { checkRole, checkBusinessType } from '../middleware/role.middleware.js';
+// --- Import Middleware ---
+import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js'; // <-- CORRECT FILE
 // ----------------------------------------------------
 
 const router = express.Router();
@@ -60,9 +60,9 @@ router.get(
 router.post(
     '/',
     // --- Apply Middleware (Uncomment when ready) ---
-    // authenticateToken, // 1. Check if logged in
-    // checkRole(['Business']), // 2. Check if role is Business
-    // checkBusinessType(['Cab']), // 3. Check if business type is Cab
+    authenticateToken, // 1. Check if logged in
+    checkRole(['Business']), // 2. Check if role is Business
+    checkBusinessType(['Cab']), // 3. Check if business type is Cab
     // ----------------------------------------------
     [ // Validation for request body
         body('model').trim().notEmpty().withMessage('Model is required.').isLength({ max: 100 }),

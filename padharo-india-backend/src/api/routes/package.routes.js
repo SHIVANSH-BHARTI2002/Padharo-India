@@ -7,8 +7,8 @@ import {
     // Import update/delete controllers later
 } from '../controllers/package.controller.js';
 // --- Import Middleware ---
-// import { authenticateToken } from '../middleware/auth.middleware.js';
-// import { checkRole } from '../middleware/role.middleware.js';
+// --- Import Middleware ---
+import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js'; // <-- CORRECT FILE
 // -----------------------
 
 const router = express.Router();
@@ -59,8 +59,8 @@ router.get(
 router.post(
     '/',
     // --- Apply Middleware ---
-    // authenticateToken,
-    // checkRole(['Admin']), // Example: Only Admin can create packages
+    authenticateToken,
+    checkRole(['Admin']), // Example: Only Admin can create packages
     // ----------------------
     [ // Validation for request body
         body('name').trim().notEmpty().withMessage('Package name is required.').isLength({ max: 255 }),

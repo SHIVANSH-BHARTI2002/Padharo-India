@@ -58,16 +58,13 @@ export const getHotelRooms = async (req, res, next) => {
 /**
  * Controller to create a new hotel (Placeholder - requires auth/role).
  */
+// ... imports ...
 export const createHotel = async (req, res, next) => {
-    // !! IMPORTANT: Add authentication and role checking middleware !!
-    // Ensure the logged-in user (req.user) is a 'Business' of type 'Hotel'
-    // Use req.user.id for owner_user_id
-
     try {
-        // const ownerUserId = req.user.id;
-        const ownerUserId = 3; // <<-- TEMPORARY Placeholder ID - REPLACE with req.user.id
+        // --- MODIFIED ---
+        const ownerUserId = req.user.id;
+        // --- END MODIFIED ---
 
-        // Ensure amenities and galleryUrls are arrays (even if empty) for JSON stringification
         const amenities = Array.isArray(req.body.amenities) ? req.body.amenities : [];
         const galleryUrls = Array.isArray(req.body.galleryUrls) ? req.body.galleryUrls : [];
 
@@ -87,22 +84,19 @@ export const createHotel = async (req, res, next) => {
     }
 };
 
-/**
- * Controller to create a new room for a hotel (Placeholder - requires auth/role).
- */
 export const createRoom = async (req, res, next) => {
-     // !! IMPORTANT: Add authentication and role checking middleware !!
-     // Ensure the logged-in user (req.user) owns the hotel (hotelId)
-
     try {
         const { hotelId } = req.params;
-        // const ownerUserId = req.user.id; // Get owner from auth token
+        // --- MODIFIED ---
+        const ownerUserId = req.user.id; // Get owner from auth token
+        // --- END MODIFIED ---
 
-        // Optional: Verify ownership - Check if hotel with hotelId actually belongs to ownerUserId
-        // const hotel = await Hotel.findById(hotelId);
-        // if (!hotel || hotel.owner_user_id !== ownerUserId) {
-        //     return res.status(403).json({ message: 'Forbidden: You do not own this hotel.' });
-        // }
+        // Optional but recommended: Verify ownership
+        const hotel = await Hotel.findById(parseInt(hotelId)); // Fetch hotel details
+        if (!hotel || hotel.owner_user_id !== ownerUserId) {
+            return res.status(403).json({ message: 'Forbidden: You do not own this hotel or hotel not found.' });
+        }
+        // --- END OWNERSHIP CHECK ---
 
         const perks = Array.isArray(req.body.perks) ? req.body.perks : [];
 
@@ -120,6 +114,7 @@ export const createRoom = async (req, res, next) => {
         next(error);
     }
 };
+// ... rest of file ...
 
 
 // --- Add other controller functions as needed (updateHotel, updateRoom, etc.) ---

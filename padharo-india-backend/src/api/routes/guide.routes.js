@@ -7,8 +7,8 @@ import {
     // Import update/delete controllers later
 } from '../controllers/guide.controller.js';
 // --- Import Middleware ---
-// import { authenticateToken } from '../middleware/auth.middleware.js';
-// import { checkRole, checkBusinessType } from '../middleware/role.middleware.js';
+// --- Import Middleware ---
+import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js'; // <-- CORRECT FILE
 // -----------------------
 
 const router = express.Router();
@@ -57,9 +57,9 @@ router.get(
 router.post(
     '/',
     // --- Apply Middleware ---
-    // authenticateToken,
-    // checkRole(['Business']),
-    // checkBusinessType(['Guide']),
+    authenticateToken,
+    checkRole(['Business']),
+    checkBusinessType(['Guide']),
     // ----------------------
     [ // Validation for request body
         body('location').trim().notEmpty().withMessage('Location is required.').isLength({ max: 255 }),

@@ -50,35 +50,29 @@ export const getCabById = async (req, res, next) => {
 /**
  * Controller to create a new cab (Placeholder - requires auth/role).
  */
+// ... imports ...
 export const createCab = async (req, res, next) => {
-    // !! IMPORTANT: Add authentication and role checking middleware before this controller !!
-    // Ensure the logged-in user (req.user) is a 'Business' of type 'Cab'
-    // and use req.user.id for driver_user_id
-
     try {
-        // Assuming auth middleware adds user to req.user
-        // const driverUserId = req.user.id;
-        const driverUserId = 1; // <<-- TEMPORARY Placeholder ID - REPLACE with req.user.id
+        // --- MODIFIED ---
+        // Get driver ID from the authenticated user object attached by middleware
+        const driverUserId = req.user.id;
+        // --- END MODIFIED ---
 
         const cabData = { ...req.body, driver_user_id: driverUserId };
 
         // Basic validation (more robust validation should be in the route definition)
-        if (!cabData.model || !cabData.plate_number || !cabData.type || !cabData.seats) {
-             return res.status(400).json({ message: 'Missing required cab fields.' });
-        }
+        // ... (keep validation or rely solely on route validation) ...
 
         const newCabId = await Cab.create(cabData);
         res.status(201).json({ message: 'Cab created successfully', cabId: newCabId });
 
     } catch (error) {
-         // Handle potential duplicate plate_number error (MySQL error code 1062)
-        if (error.code === 'ER_DUP_ENTRY') {
-             return res.status(409).json({ message: 'Plate number already exists.' });
-        }
+        // ... (keep error handling) ...
         console.error("Error in createCab:", error);
         next(error);
     }
 };
+// ... rest of file ...
 
 // --- Add other controller functions as needed ---
 // export const updateCabAvailability = async (req, res, next) => { ... };

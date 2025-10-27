@@ -47,16 +47,13 @@ export const getGuideById = async (req, res, next) => {
 /**
  * Controller to create a new guide profile (Placeholder - requires auth/role).
  */
+// ... imports ...
 export const createGuide = async (req, res, next) => {
-    // !! IMPORTANT: Add authentication and role checking middleware !!
-    // Ensure the logged-in user (req.user) is a 'Business' of type 'Guide'
-    // Use req.user.id for guide_user_id
-
     try {
-        // const guideUserId = req.user.id;
-        const guideUserId = 4; // <<-- TEMPORARY Placeholder ID for Rajesh Kumar - REPLACE with req.user.id
+        // --- MODIFIED ---
+        const guideUserId = req.user.id;
+        // --- END MODIFIED ---
 
-        // Ensure arrays for JSON fields
         const languages = Array.isArray(req.body.languages) ? req.body.languages : [];
         const specialties = Array.isArray(req.body.specialties) ? req.body.specialties : [];
 
@@ -75,5 +72,6 @@ export const createGuide = async (req, res, next) => {
         next(error);
     }
 };
+// ... rest of file ...
 
 // --- Add other controller functions as needed (updateGuide, verifyGuide (Admin), etc.) ---
