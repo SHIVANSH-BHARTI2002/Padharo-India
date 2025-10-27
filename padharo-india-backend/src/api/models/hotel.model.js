@@ -1,6 +1,8 @@
 import pool from '../../config/db.js';
 import Room from './room.model.js'; // Import Room model
-// Import Review model later if calculating ratings
+// --- MODIFIED: Import Review model and helper ---
+import Review, { calculateAverageRating } from './review.model.js';
+// --- END MODIFIED ---
 
 class Hotel {
   /**
@@ -9,9 +11,11 @@ class Hotel {
    * @returns {Promise<Array>} - A promise resolving to an array of hotel objects.
    */
   static async findAll(filters = {}) {
+    // ... (findAll code remains the same) ...
     let sql = `
       SELECT
         h.id, h.name, h.location, h.description, h.star_rating, h.image_url
+        -- Calculate average rating later if needed for list view
       FROM hotels h
       JOIN users u ON h.owner_user_id = u.id
       WHERE u.role = 'Business' AND u.businessType = 'Hotel'
@@ -79,25 +83,17 @@ class Hotel {
     delete hotel.gallery_urls_json;
 
     // 2. Fetch Associated Rooms
-    hotel.rooms = await Room.findByHotelId(id);
+    hotel.rooms = await Room.findByHotelId(id); //
 
-    // 3. Fetch Reviews and Calculate Rating/Count (Placeholder - Requires Review Model)
-    // const reviews = await Review.findByService('Hotel', id);
-    // hotel.reviewsData = {
-    //   averageRating: calculateAverageRating(reviews), // Implement this helper
-    //   count: reviews.length,
-    //   list: reviews // Or a subset
-    // };
-    // --- Temporary Mock Review Data ---
-     hotel.reviewsData = {
-         averageRating: 4.8, // Mock data based on frontend
-         count: 2240,       // Mock data based on frontend
-         list: [            // Mock data based on frontend
-             { name: "Ramesh", rating: 5, comment: "Amazing hospitality and beautiful rooms." },
-             { name: "Priya", rating: 5, comment: "Great food & perfect location near MG Road." }
-         ]
-     };
-    // ------------------------------------
+    // --- MODIFIED: Fetch and Calculate Reviews ---
+    const reviews = await Review.findByService('Hotel', id); //
+    hotel.reviewsData = {
+        averageRating: calculateAverageRating(reviews), //
+        count: reviews.length,
+        // You might want to limit the list size for performance or show only recent ones
+        list: reviews.slice(0, 5) // Example: Show latest 5 reviews
+    };
+    // --- END MODIFIED ---
 
     return hotel;
   }
@@ -108,6 +104,7 @@ class Hotel {
    * @returns {Promise<number>} - A promise resolving to the ID of the newly created hotel.
    */
   static async create(hotelData) {
+    // ... (create code remains the same) ...
     const {
         owner_user_id, name, location, description, star_rating,
         amenities, image_url, galleryUrls // Expect arrays for JSON fields

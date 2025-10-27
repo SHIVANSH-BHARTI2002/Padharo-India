@@ -1,4 +1,7 @@
 import pool from '../../config/db.js';
+// --- MODIFIED: Import Review model and helper ---
+import Review, { calculateAverageRating } from './review.model.js';
+// --- END MODIFIED ---
 
 class Guide {
   /**
@@ -8,13 +11,13 @@ class Guide {
    * @returns {Promise<Array>} - A promise resolving to an array of guide objects.
    */
   static async findAll(filters = {}) {
-    // Note: Filtering by JSON array contents (languages, specialties) can be complex/slow in SQL.
-    // Basic filtering by location/name is shown. More advanced filtering might be done in the application layer after fetching.
+    // ... (findAll code remains the same, including JSON parsing in map) ...
     let sql = `
       SELECT
         g.id, g.location, g.description_short, g.languages_json, g.specialties_json,
         g.price_per_hour, g.experience_years, g.tours_completed, g.image_url, g.is_verified,
         u.firstName as guideFirstName, u.lastName as guideLastName
+        -- Add rating calculation if needed later
       FROM guides g
       JOIN users u ON g.guide_user_id = u.id
       WHERE u.role = 'Business' AND u.businessType = 'Guide' AND g.is_verified = TRUE
@@ -53,7 +56,7 @@ class Guide {
   }
 
   /**
-   * Finds a single guide by ID, including detailed info.
+   * Finds a single guide by ID, including detailed info and reviews.
    * @param {number} id - The ID of the guide.
    * @returns {Promise<object|null>} - A promise resolving to the detailed guide object or null if not found.
    */
@@ -83,43 +86,26 @@ class Guide {
     delete guide.languages_json;
     delete guide.specialties_json;
 
-    // --- Enhancement: Fetch Reviews ---
-    // guide.reviewsData = await Review.findByService('Guide', id); // Fetch reviews
-    // guide.averageRating = calculateAverageRating(guide.reviewsData.list); // Calculate rating
-     // --- Temporary Mock Review Data ---
-     // Based on GuideDetailsPage.jsx mock data for guide ID 1
-     if (guide.id === 1) { // Assuming the fetched guide has id 1 based on SQL insert
-         guide.reviewsData = {
-             averageRating: 4.9,
-             count: 124,
-             list: [
-                 { name: 'John Doe', rating: 5, comment: 'Rajesh was an amazing guide! So knowledgeable and friendly.' },
-                 { name: 'Jane Smith', rating: 5, comment: 'Highly recommend this tour. We saw so much and learned a lot.' },
-             ]
-         };
-     } else {
-          guide.reviewsData = { averageRating: 0, count: 0, list: [] }; // Default for others
-     }
-    // ------------------------------------
+    // --- MODIFIED: Fetch and Calculate Reviews ---
+    const reviews = await Review.findByService('Guide', id); //
+    guide.reviewsData = {
+        averageRating: calculateAverageRating(reviews), //
+        count: reviews.length,
+        // Example: Show latest 5 reviews on details page
+        list: reviews.slice(0, 5)
+    };
+    // --- END MODIFIED ---
 
     // --- Enhancement: Fetch Gallery/Places Covered ---
-    // If places covered are static per guide, add a places_json column similar to languages/specialties
-    // If gallery is needed, add gallery_urls_json column like in hotels
-     // --- Temporary Mock Gallery/Places ---
-     if (guide.id === 1) {
+    // Keep temporary mock or implement DB storage if needed
+     if (guide.id === 1) { // Example for guide 1
          guide.placesCovered = ['Hawa Mahal', 'Amber Fort', 'City Palace', 'Jantar Mantar'];
-         guide.gallery = [
-            '/src/assets/hawa-mahal.jpg',
-            '/src/assets/fort.jpg',
-            '/src/assets/tajmahal.jpg',
-            '/src/assets/golden-temple.jpg',
-        ];
+         guide.gallery = [ /* ... gallery URLs ... */];
      } else {
          guide.placesCovered = [];
          guide.gallery = [];
      }
-     // ------------------------------------
-
+    // ------------------------------------
 
     return guide;
   }
@@ -130,6 +116,7 @@ class Guide {
    * @returns {Promise<number>} - A promise resolving to the ID of the newly created guide profile.
    */
   static async create(guideData) {
+    // ... (create code remains the same) ...
     const {
       guide_user_id, location, description_short, description_long,
       languages, specialties, price_per_hour, experience_years, image_url

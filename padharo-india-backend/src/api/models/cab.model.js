@@ -1,4 +1,7 @@
 import pool from '../../config/db.js';
+// --- MODIFIED: Import Review model and helper ---
+import Review, { calculateAverageRating } from './review.model.js';
+// --- END MODIFIED ---
 
 class Cab {
   /**
@@ -8,6 +11,7 @@ class Cab {
    * @returns {Promise<Array>} - A promise resolving to an array of cab objects.
    */
  static async findAll(filters = {}) {
+    // ... (findAll code remains the same) ...
     let sql = `
       SELECT
         c.id, c.model, c.plate_number, c.type, c.seats, c.transmission,
@@ -42,7 +46,7 @@ class Cab {
   }
 
   /**
-   * Finds a single cab by its ID, including driver details.
+   * Finds a single cab by its ID, including driver details and reviews.
    * @param {number} id - The ID of the cab to find.
    * @returns {Promise<object|null>} - A promise resolving to the cab object or null if not found.
    */
@@ -53,6 +57,7 @@ class Cab {
         c.fuel_type, c.year, c.base_rate_km, c.base_rate_hour, c.image_url, c.is_available,
         u.firstName as driverFirstName, u.lastName as driverLastName,
         u.mobile as driverMobile, u.email as driverEmail
+        -- Add driver experience column to users table if needed and select it here
       FROM cabs c
       JOIN users u ON c.driver_user_id = u.id
       WHERE c.id = ? AND u.role = 'Business' AND u.businessType = 'Cab'
@@ -65,11 +70,16 @@ class Cab {
 
     const cab = rows[0];
 
-    // --- Enhancement: Fetch Reviews ---
-    // You would typically call another model function here, e.g., Review.findByService('Cab', id)
-    // For now, we'll return the cab data only. You can add review fetching later.
-    // cab.reviews = await Review.findByService('Cab', id);
-    // cab.averageRating = calculateAverageRating(cab.reviews); // Helper function
+    // --- MODIFIED: Fetch and Calculate Reviews ---
+    const reviews = await Review.findByService('Cab', id); //
+    cab.reviewsData = {
+        averageRating: calculateAverageRating(reviews), //
+        count: reviews.length,
+        list: reviews // Attach the list of reviews
+    };
+    // Example: If you add 'experienceYears' to the users table:
+    // cab.experience = cab.driverExperienceYears + "+ years"; // Assuming you select experienceYears as driverExperienceYears
+    // --- END MODIFIED ---
 
     return cab;
   }
@@ -80,6 +90,7 @@ class Cab {
    * @returns {Promise<number>} - A promise resolving to the ID of the newly created cab.
    */
   static async create(cabData) {
+    // ... (create code remains the same) ...
     const {
         driver_user_id, model, plate_number, type, seats, transmission,
         fuel_type, year, base_rate_km, base_rate_hour, image_url

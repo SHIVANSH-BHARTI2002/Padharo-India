@@ -18,7 +18,7 @@ import hotelRoutes from './api/routes/hotel.routes.js';
 import guideRoutes from './api/routes/guide.routes.js';
 import packageRoutes from './api/routes/package.routes.js';
 import bookingRoutes from './api/routes/booking.routes.js';
-// import reviewRoutes from './api/routes/review.routes.js';
+import reviewRoutes from './api/routes/review.routes.js';
 // -----------------------------------------------------------
 
 // Correctly locate .env relative to this file (server.js is in src/)
@@ -51,7 +51,7 @@ app.use('/api/hotels', hotelRoutes); // Includes room routes nested or separate
 app.use('/api/guides', guideRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes); // Needs authentication
-// app.use('/api/reviews', reviewRoutes);   // Needs authentication
+app.use('/api/reviews', reviewRoutes);   // Needs authentication
 // ------------------------------------
 
 // --- Error Handling ---
