@@ -1,3 +1,4 @@
+/* === Filename: padharo-india-backend/src/server.js === */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -8,11 +9,11 @@ import { fileURLToPath } from 'url'; // To get __dirname in ES modules
 import pool from './config/db.js';
 
 // Import Middleware
-import errorHandler from './api/middleware/errorHandler.js'; // Corrected path
+import errorHandler from './api/middleware/errorHandler.js';
 
 // Import Routes
-import authRoutes from './api/routes/auth.routes.js'; // Corrected path
-// --- Import Phase 2 Routes (Add these as you create them) ---
+import authRoutes from './api/routes/auth.routes.js';
+import userRoutes from './api/routes/user.routes.js'; // <--- ADD THIS LINE
 import cabRoutes from './api/routes/cab.routes.js';
 import hotelRoutes from './api/routes/hotel.routes.js';
 import guideRoutes from './api/routes/guide.routes.js';
@@ -44,14 +45,16 @@ app.get('/', (req, res) => {
 // Authentication Routes
 app.use('/api/auth', authRoutes);
 
+// User Profile Routes  <--- ADD THIS LINE
+app.use('/api/user', userRoutes); // <--- ADD THIS LINE
+
 // --- Mount Phase 2 Feature Routes ---
-// Uncomment these as you implement them
 app.use('/api/cabs', cabRoutes);
-app.use('/api/hotels', hotelRoutes); // Includes room routes nested or separate
+app.use('/api/hotels', hotelRoutes);
 app.use('/api/guides', guideRoutes);
 app.use('/api/packages', packageRoutes);
-app.use('/api/bookings', bookingRoutes); // Needs authentication
-app.use('/api/reviews', reviewRoutes);   // Needs authentication
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
 // ------------------------------------
 
 // --- Error Handling ---
