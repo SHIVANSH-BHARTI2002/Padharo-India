@@ -9,6 +9,74 @@ class Package {
    * @param {object} filters - Optional filters (query, price, rating, nights).
    * @returns {Promise<Array>} - A promise resolving to an array of package objects.
    */
+  /**
+   * Updates a package's details. Intended for Admin use.
+   * @param {number} id - The ID of the package to update.
+   * @param {object} updateData - An object containing fields to update.
+   * @returns {Promise<boolean>} - True if the update was successful, false otherwise.
+   */
+  static async update(id, updateData) {
+    const allowedFields = [
+        'name', 'places_json', 'nights', 'description',
+        'included_json', 'price', 'image_url'
+        // Add itinerary_json, gallery_urls_json if implemented
+    ];
+    const setClauses = [];
+    const params = [];
+
+    for (const key of allowedFields) {
+        if (updateData[key] !== undefined) {
+            let value = updateData[key];
+            let dbKey = key;
+
+            // Handle JSON fields and potential key renaming
+            if (key === 'places') { dbKey = 'places_json'; value = JSON.stringify(value || []); }
+            if (key === 'included') { dbKey = 'included_json'; value = JSON.stringify(value || []); }
+            // Add similar handling for itinerary, galleryUrls if needed
+
+            setClauses.push(`${dbKey} = ?`);
+            params.push(value);
+        }
+    }
+
+    if (setClauses.length === 0) {
+        return false; // Nothing valid to update
+    }
+
+    const sql = `UPDATE packages SET ${setClauses.join(', ')} WHERE id = ?`;
+    params.push(id);
+
+    try {
+        const [result] = await pool.execute(sql, params);
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error("Error updating package in DB:", error);
+         // Handle potential duplicate name error if name is updated
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw new Error('Package name already exists.');
+        }
+        throw error;
+    }
+  }
+
+  /**
+   * Deletes a package by its ID. Intended for Admin use.
+   * @param {number} id - The ID of the package to delete.
+   * @returns {Promise<boolean>} - True if deletion was successful, false otherwise.
+   */
+  static async deleteById(id) {
+    const sql = 'DELETE FROM packages WHERE id = ?';
+    try {
+        const [result] = await pool.execute(sql, [id]);
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error("Error deleting package from DB:", error);
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+             throw new Error('Cannot delete package: It has associated bookings or reviews.');
+        }
+        throw error;
+    }
+  }
   static async findAll(filters = {}) {
     // ... (findAll code remains the same, including safe JSON parsing in map) ...
     let sql = `

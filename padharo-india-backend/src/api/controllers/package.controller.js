@@ -81,3 +81,73 @@ export const createPackage = async (req, res, next) => {
 };
 
 // --- Add other controller functions as needed (updatePackage, deletePackage) ---
+export const updatePackage = async (req, res, next) => {
+    try {
+        const packageId = parseInt(req.params.id); // Get ID from param for update/delete
+        const updateData = req.body;
+
+        if (isNaN(packageId)) {
+            return res.status(400).json({ message: 'Invalid Package ID.' });
+        }
+
+        // Handle array inputs for JSON fields
+        if (updateData.places && !Array.isArray(updateData.places)) {
+             return res.status(400).json({ message: 'Places must be an array.' });
+        }
+        if (updateData.included && !Array.isArray(updateData.included)) {
+             return res.status(400).json({ message: 'Included items must be an array.' });
+        }
+        // Add similar checks for itinerary, galleryUrls if implemented
+
+        const success = await Package.update(packageId, updateData);
+
+        if (!success) {
+            // Check if it actually exists
+             const pkg = await Package.findById(packageId); // Need findById if not already existing
+             if (!pkg) {
+                return res.status(404).json({ message: 'Package not found.' });
+             } else {
+                 return res.status(200).json({ message: 'No fields updated or update failed.' });
+             }
+        }
+
+        // Fetch by Name requires the name, let's just return success or fetch by ID if needed
+        // For consistency, might need Package.findById(id)
+        res.status(200).json({ message: 'Package updated successfully' }); // Or return updated package data
+
+    } catch (error) {
+        if (error.message === 'Package name already exists.') {
+            return res.status(409).json({ message: error.message });
+        }
+        console.error(`Error in updatePackage controller (id: ${req.params.id}):`, error);
+        next(error);
+    }
+};
+
+/**
+ * Controller to delete a package. Requires Admin role.
+ */
+export const deletePackage = async (req, res, next) => {
+    try {
+        const packageId = parseInt(req.params.id);
+
+        if (isNaN(packageId)) {
+            return res.status(400).json({ message: 'Invalid Package ID.' });
+        }
+
+        const success = await Package.deleteById(packageId);
+
+        if (!success) {
+            return res.status(404).json({ message: 'Package not found.' });
+        }
+
+        res.status(200).json({ message: 'Package deleted successfully.' });
+
+    } catch (error) {
+        if (error.message.startsWith('Cannot delete package:')) {
+             return res.status(409).json({ message: error.message }); // Conflict
+         }
+        console.error(`Error in deletePackage controller (id: ${req.params.id}):`, error);
+        next(error);
+    }
+};

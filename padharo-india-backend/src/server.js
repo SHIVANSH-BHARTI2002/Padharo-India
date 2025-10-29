@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') }); // Go up one level from src/ to backend/
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5173;
 
 // Core Middleware
 app.use(cors()); // Enable Cross-Origin Resource Sharing

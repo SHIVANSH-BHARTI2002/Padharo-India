@@ -1,15 +1,15 @@
+/* === Filename: padharo-india-backend/src/api/routes/package.routes.js === */
 import express from 'express';
 import { query, param, body, validationResult } from 'express-validator';
 import {
     getAllPackages,
     getPackageByName,
-    createPackage
-    // Import update/delete controllers later
-} from '../controllers/package.controller.js';
-// --- Import Middleware ---
-// --- Import Middleware ---
-import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js'; // <-- CORRECT FILE
-// -----------------------
+    createPackage,
+    updatePackage, // <-- Added controller for PUT
+    deletePackage  // <-- Added controller for DELETE
+} from '../controllers/package.controller.js'; //
+// Import Middleware
+import { authenticateToken, checkRole } from '../middleware/auth.middleware.js'; // Removed checkBusinessType as Admin role is sufficient
 
 const router = express.Router();
 
@@ -20,7 +20,8 @@ const handleValidationErrors = (req, res, next) => {
         console.error("Validation Errors:", errors.array());
         return res.status(400).json({
             message: "Validation failed.",
-            errors: errors.array().map(err => ({ field: err.param || err.path, message: err.msg }))
+            // Map errors to a consistent format
+            errors: errors.array().map(err => ({ field: err.param || err.path || 'body', message: err.msg })) //
         });
     }
     next();
@@ -39,45 +40,77 @@ router.get(
         // Add validation for 'sort' if implemented
     ],
     handleValidationErrors,
-    getAllPackages
+    getAllPackages //
 );
 
 // GET /api/packages/:packageName - Get details for a specific package by name
 router.get(
-    // Use a regex to allow names with hyphens, but sanitize/validate further if needed
+    // Use a regex to allow names with hyphens
     '/:packageName([a-zA-Z0-9-]+)',
-    [ // Validation for URL parameter (basic check)
+    [ // Validation for URL parameter
         param('packageName').trim().notEmpty().withMessage('Package name is required in URL.')
     ],
     handleValidationErrors,
-    getPackageByName
+    getPackageByName //
 );
 
-// --- Protected Routes (Example - Require Admin Role) ---
+// --- Protected Admin Routes ---
 
 // POST /api/packages - Create a new package (Requires Admin Role)
 router.post(
     '/',
-    // --- Apply Middleware ---
-    authenticateToken,
+    // Apply Middleware
+    authenticateToken, //
     checkRole(['Admin']), // Example: Only Admin can create packages
-    // ----------------------
-    [ // Validation for request body
-        body('name').trim().notEmpty().withMessage('Package name is required.').isLength({ max: 255 }),
-        body('places').optional().isArray().withMessage('Places must be an array of strings.'),
-        body('places.*').optional().isString().trim().notEmpty(),
-        body('nights').isInt({ min: 1 }).withMessage('Nights must be a positive integer.'),
-        body('description').optional().isString().trim(),
-        body('included').optional().isArray().withMessage('Included items must be an array of strings.'),
-        body('included.*').optional().isString().trim().notEmpty(),
-        body('price').isDecimal({ decimal_digits: '0,2' }).withMessage('Price must be a valid decimal number.').toFloat(),
-        body('image_url').optional({ checkFalsy: true }).isURL().withMessage('Image URL must be valid.'),
-        // Add validation for itinerary, galleryUrls if added
+    // Validation
+    [
+        body('name').trim().notEmpty().withMessage('Package name is required.').isLength({ max: 255 }), //
+        body('places').optional().isArray().withMessage('Places must be an array of strings.'), //
+        body('places.*').optional().isString().trim().notEmpty(), //
+        body('nights').isInt({ min: 1 }).withMessage('Nights must be a positive integer.'), //
+        body('description').optional().isString().trim(), //
+        body('included').optional().isArray().withMessage('Included items must be an array of strings.'), //
+        body('included.*').optional().isString().trim().notEmpty(), //
+        body('price').isDecimal({ decimal_digits: '0,2' }).withMessage('Price must be a valid decimal number.').toFloat(), //
+        body('image_url').optional({ checkFalsy: true }).isURL().withMessage('Image URL must be valid.'), //
+        // Add validation for itinerary, galleryUrls if added later
     ],
     handleValidationErrors,
-    createPackage
+    createPackage //
 );
 
-// --- Add PUT/PATCH/DELETE routes later ---
+// PUT /api/packages/:id - Update an existing package (Requires Admin Role)
+router.put(
+    '/:id', // Use numeric ID for consistency in update/delete operations
+    authenticateToken, //
+    checkRole(['Admin']), // Only Admin
+    [ // Validation for update (optional fields)
+        param('id').isInt({ min: 1 }).withMessage('Package ID must be a positive integer.'),
+        body('name').optional().trim().notEmpty().isLength({ max: 255 }),
+        body('places').optional().isArray(),
+        body('places.*').optional().isString().trim().notEmpty(),
+        body('nights').optional().isInt({ min: 1 }),
+        body('description').optional().isString().trim(),
+        body('included').optional().isArray(),
+        body('included.*').optional().isString().trim().notEmpty(),
+        body('price').optional().isDecimal({ decimal_digits: '0,2' }).toFloat(),
+        body('image_url').optional({ checkFalsy: true }).isURL(),
+        // Add validation for itinerary, galleryUrls if added later
+    ],
+    handleValidationErrors,
+    updatePackage //
+);
+
+// DELETE /api/packages/:id - Delete a package (Requires Admin Role)
+router.delete(
+    '/:id', // Use numeric ID for consistency
+    authenticateToken, //
+    checkRole(['Admin']), // Only Admin
+    [
+        param('id').isInt({ min: 1 }).withMessage('Package ID must be a positive integer.')
+    ],
+    handleValidationErrors,
+    deletePackage //
+);
 
 export default router;
