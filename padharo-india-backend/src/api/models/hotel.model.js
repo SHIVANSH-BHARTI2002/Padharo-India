@@ -27,7 +27,7 @@ class Hotel {
         h.id, h.name, h.location, h.description, h.star_rating, h.image_url
         -- TODO: Calculate/join average rating for sorting/display
       FROM hotels h
-      JOIN users u ON h.owner_user_id = u.id
+      JOIN users u ON h.owner_user_id = u.id /* */
       WHERE u.role = 'Business' AND u.businessType = 'Hotel'
     `;
     const params = [];
@@ -63,6 +63,7 @@ class Hotel {
    * @returns {Promise<object|null>} - A promise resolving to the detailed hotel object or null if not found.
    */
   static async findById(id) {
+    console.log(`[Hotel.findById] START - Fetching hotel for ID: ${id}`); // Logging added
     const hotelSql = `
       SELECT
         h.id, h.owner_user_id, h.name, h.location, h.description, h.star_rating,
@@ -70,54 +71,91 @@ class Hotel {
       FROM hotels h
       WHERE h.id = ?
     `;
-    const [hotelRows] = await pool.execute(hotelSql, [id]);
+    try { // Wrap main logic in try/catch
+        const [hotelRows] = await pool.execute(hotelSql, [id]);
+        console.log(`[Hotel.findById] Fetched hotel DB data for ID: ${id}`); // Logging added
 
-    if (hotelRows.length === 0) {
-      return null;
-    }
-    const hotel = hotelRows[0];
-
-    // --- Start Corrected JSON Handling ---
-    try {
-        // Check if it's a string before parsing, otherwise use if it's already an array
-        if (typeof hotel.amenities_json === 'string' && hotel.amenities_json.trim().startsWith('[')) {
-            hotel.amenities = JSON.parse(hotel.amenities_json);
-        } else if (Array.isArray(hotel.amenities_json)) {
-            hotel.amenities = hotel.amenities_json; // Already parsed by driver
-        } else {
-             hotel.amenities = []; // Default to empty array if null or invalid format
+        if (hotelRows.length === 0) {
+          console.log(`[Hotel.findById] Hotel not found for ID: ${id}`); // Logging added
+          return null;
         }
-    } catch (e) {
-        console.error(`Error processing amenities_json for hotel ID ${id}:`, hotel.amenities_json, e);
-        hotel.amenities = []; // Default on error
-    }
-     try {
-         // Check if it's a string before parsing, otherwise use if it's already an array
-        if (typeof hotel.gallery_urls_json === 'string' && hotel.gallery_urls_json.trim().startsWith('[')) {
-            hotel.galleryUrls = JSON.parse(hotel.gallery_urls_json);
-        } else if (Array.isArray(hotel.gallery_urls_json)) {
-             hotel.galleryUrls = hotel.gallery_urls_json; // Already parsed by driver
-        } else {
-             hotel.galleryUrls = []; // Default to empty array if null or invalid format
+        const hotel = hotelRows[0];
+
+        // --- Start Corrected JSON Handling ---
+        console.log(`[Hotel.findById] Processing JSON for ID: ${id}`); // Logging added
+        try {
+            // Check if it's a string before parsing, otherwise use if it's already an array
+            if (typeof hotel.amenities_json === 'string' && hotel.amenities_json.trim().startsWith('[')) {
+                hotel.amenities = JSON.parse(hotel.amenities_json);
+            } else if (Array.isArray(hotel.amenities_json)) {
+                hotel.amenities = hotel.amenities_json; // Already parsed by driver
+            } else {
+                 hotel.amenities = []; // Default to empty array if null or invalid format
+            }
+        } catch (e) {
+            console.error(`[Hotel.findById] Error processing amenities_json for hotel ID ${id}:`, hotel.amenities_json, e);
+            hotel.amenities = []; // Default on error
         }
-    } catch (e) {
-         console.error(`Error processing gallery_urls_json for hotel ID ${id}:`, hotel.gallery_urls_json, e);
-        hotel.galleryUrls = []; // Default on error
+         try {
+             // Check if it's a string before parsing, otherwise use if it's already an array
+            if (typeof hotel.gallery_urls_json === 'string' && hotel.gallery_urls_json.trim().startsWith('[')) {
+                hotel.galleryUrls = JSON.parse(hotel.gallery_urls_json);
+            } else if (Array.isArray(hotel.gallery_urls_json)) {
+                 hotel.galleryUrls = hotel.gallery_urls_json; // Already parsed by driver
+            } else {
+                 hotel.galleryUrls = []; // Default to empty array if null or invalid format
+            }
+        } catch (e) {
+             console.error(`[Hotel.findById] Error processing gallery_urls_json for hotel ID ${id}:`, hotel.gallery_urls_json, e);
+            hotel.galleryUrls = []; // Default on error
+        }
+        // --- End Corrected JSON Handling ---
+        delete hotel.amenities_json; // Remove original fields after processing
+        delete hotel.gallery_urls_json; // Remove original fields after processing
+        console.log(`[Hotel.findById] Finished JSON processing for ID: ${id}`); // Logging added
+
+
+        // --- Fetch Rooms with try/catch ---
+        try {
+            console.log(`[Hotel.findById] Fetching rooms for hotel ID: ${id}`); // Logging added
+            hotel.rooms = await Room.findByHotelId(id); //
+            console.log(`[Hotel.findById] Fetched rooms successfully for hotel ID: ${id}. Count: ${hotel.rooms?.length}`); // Logging added
+        } catch (roomError) {
+            console.error(`[Hotel.findById] Error fetching rooms for hotel ID ${id}:`, roomError);
+            hotel.rooms = []; // Assign default on error
+            // Decide if you want to throw the error to stop the request or return partial data
+            // throw roomError; // Option: Stop processing and let controller handle error
+        }
+
+        // --- Fetch Reviews with try/catch ---
+        let reviews = []; // Initialize reviews variable
+        try {
+            console.log(`[Hotel.findById] Fetching reviews for hotel ID: ${id}`); // Logging added
+            reviews = await Review.findByService('Hotel', id); //
+            console.log(`[Hotel.findById] Fetched reviews successfully for hotel ID: ${id}. Count: ${reviews?.length}`); // Logging added
+        } catch (reviewError) {
+            console.error(`[Hotel.findById] Error fetching reviews for hotel ID ${id}:`, reviewError);
+            // reviews remains []; Assign default on error
+            // Decide if you want to throw the error or return partial data
+            // throw reviewError; // Option: Stop processing and let controller handle error
+        }
+
+        // --- Calculate Review Data ---
+        console.log(`[Hotel.findById] Calculating review data for ID: ${id}`); // Logging added
+        hotel.reviewsData = {
+            averageRating: calculateAverageRating(reviews), //
+            count: reviews.length,
+            list: reviews.slice(0, 5)
+        };
+        console.log(`[Hotel.findById] Calculated review data for ID: ${id}`); // Logging added
+
+        console.log(`[Hotel.findById] END - Returning hotel object for ID: ${id}`); // Logging added
+        return hotel;
+
+    } catch (error) { // Catch errors from initial hotel query or re-thrown errors
+        console.error(`[Hotel.findById] MAIN CATCH BLOCK - Error for hotel ID ${id}:`, error);
+        throw error; // Re-throw to be caught by the controller/global handler
     }
-    // --- End Corrected JSON Handling ---
-
-    delete hotel.amenities_json; // Remove original fields after processing
-    delete hotel.gallery_urls_json; // Remove original fields after processing
-
-    hotel.rooms = await Room.findByHotelId(id); //
-    const reviews = await Review.findByService('Hotel', id); //
-    hotel.reviewsData = {
-        averageRating: calculateAverageRating(reviews), //
-        count: reviews.length,
-        list: reviews.slice(0, 5) // Example: Show latest 5 reviews
-    };
-
-    return hotel;
   }
 
    /**
@@ -176,7 +214,7 @@ class Hotel {
         let dbKey = key;
         let value = updateData[key];
 
-        // Map input keys to DB keys and stringify JSON arrays
+        // Map input keys to DB keys and stringify JSON arrays if necessary
         if (key === 'amenities') {
             dbKey = 'amenities_json';
             value = JSON.stringify(value || []); // Ensure stringification
@@ -191,7 +229,6 @@ class Hotel {
              params.push(value);
         }
     }
-
 
     if (setClauses.length === 0) {
         console.warn(`Update called for hotel ${id} with no valid fields.`);
@@ -241,11 +278,10 @@ class Hotel {
     } catch (error) {
         await connection.rollback();
         console.error("Error deleting hotel (and rooms) from DB:", error);
-        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-             // More specific error based on Room.deleteByHotelId might be thrown first
+        if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.message.includes('dependent records')) { // Catch error from Room.deleteByHotelId too
              throw new Error('Cannot delete hotel: It may have associated bookings or reviews.');
         }
-        throw error; // Re-throw if it's not the foreign key error or if Room.deleteByHotelId throws
+        throw error; // Re-throw other errors
     } finally {
         connection.release();
     }

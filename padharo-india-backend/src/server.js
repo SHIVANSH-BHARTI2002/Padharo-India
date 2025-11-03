@@ -1,4 +1,4 @@
-/* === Filename: padharo-india-backend/src/server.js === */
+/* === Filename: src/server.js === */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,20 +6,23 @@ import path from 'path'; // Import path
 import { fileURLToPath } from 'url'; // To get __dirname in ES modules
 
 // Import database pool
-import pool from './config/db.js';
+import pool from './config/db.js'; //
 
 // Import Middleware
-import errorHandler from './api/middleware/errorHandler.js';
+import errorHandler from './api/middleware/errorHandler.js'; //
 
 // Import Routes
-import authRoutes from './api/routes/auth.routes.js';
-import userRoutes from './api/routes/user.routes.js'; // <--- ADD THIS LINE
-import cabRoutes from './api/routes/cab.routes.js';
-import hotelRoutes from './api/routes/hotel.routes.js';
-import guideRoutes from './api/routes/guide.routes.js';
-import packageRoutes from './api/routes/package.routes.js';
-import bookingRoutes from './api/routes/booking.routes.js';
-import reviewRoutes from './api/routes/review.routes.js';
+import authRoutes from './api/routes/auth.routes.js'; //
+import userRoutes from './api/routes/user.routes.js'; //
+import cabRoutes from './api/routes/cab.routes.js'; //
+import hotelRoutes from './api/routes/hotel.routes.js'; //
+import guideRoutes from './api/routes/guide.routes.js'; //
+import packageRoutes from './api/routes/package.routes.js'; //
+import bookingRoutes from './api/routes/booking.routes.js'; //
+import reviewRoutes from './api/routes/review.routes.js'; //
+// --- NEW PHASE 5 IMPORTS ---
+import supportRoutes from './api/routes/support.routes.js';
+import adminRoutes from './api/routes/admin.routes.js';
 // -----------------------------------------------------------
 
 // Correctly locate .env relative to this file (server.js is in src/)
@@ -28,7 +31,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') }); // Go up one level from src/ to backend/
 
 const app = express();
-const PORT = process.env.PORT || 5173;
+const PORT = process.env.PORT || 5000;
 
 // Core Middleware
 app.use(cors()); // Enable Cross-Origin Resource Sharing
@@ -43,18 +46,24 @@ app.get('/', (req, res) => {
 });
 
 // Authentication Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes); //
 
-// User Profile Routes  <--- ADD THIS LINE
-app.use('/api/user', userRoutes); // <--- ADD THIS LINE
+// User Profile Routes
+app.use('/api/user', userRoutes); //
 
 // --- Mount Phase 2 Feature Routes ---
-app.use('/api/cabs', cabRoutes);
-app.use('/api/hotels', hotelRoutes);
-app.use('/api/guides', guideRoutes);
-app.use('/api/packages', packageRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/cabs', cabRoutes); //
+app.use('/api/hotels', hotelRoutes); //
+app.use('/api/guides', guideRoutes); //
+app.use('/api/packages', packageRoutes); //
+app.use('/api/bookings', bookingRoutes); //
+app.use('/api/reviews', reviewRoutes); //
+
+// --- NEW PHASE 5 ROUTES ---
+// User-facing support routes
+app.use('/api/support', supportRoutes);
+// Admin-only routes
+app.use('/api/admin', adminRoutes);
 // ------------------------------------
 
 // --- Error Handling ---
@@ -65,7 +74,7 @@ app.use((req, res, next) => {
 });
 
 // Global Error Handler Middleware (Must be last)
-app.use(errorHandler);
+app.use(errorHandler); //
 
 // --- Server Startup ---
 app.listen(PORT, () => {
@@ -76,7 +85,7 @@ app.listen(PORT, () => {
 const shutdown = async (signal) => {
     console.log(`\n${signal} received. Shutting down server...`);
     try {
-        await pool.end();
+        await pool.end(); //
         console.log('Database pool closed.');
         process.exit(0);
     } catch (err) {

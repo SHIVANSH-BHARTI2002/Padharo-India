@@ -1,3 +1,4 @@
+/* === Filename: src/api/models/package.model.js === */
 import pool from '../../config/db.js';
 // --- MODIFIED: Import Review model and helper ---
 import Review, { calculateAverageRating } from './review.model.js';
@@ -78,7 +79,6 @@ class Package {
     }
   }
   static async findAll(filters = {}) {
-    // ... (findAll code remains the same, including safe JSON parsing in map) ...
     let sql = `
       SELECT
         id, name, places_json, nights, description,
@@ -208,16 +208,12 @@ class Package {
       delete pkg.places_json;
       delete pkg.included_json;
 
-      // --- MODIFIED: Fetch and Calculate Reviews ---
       const reviews = await Review.findByService('Package', pkg.id); //
       pkg.reviewsData = {
         averageRating: calculateAverageRating(reviews), //
         count: reviews.length,
-        // Example: Show latest 5 reviews
         list: reviews.slice(0, 5)
       };
-      // --- END MODIFIED ---
-
       // --- Enhancement: Itinerary, Gallery ---
       // (Keep temporary mock data or implement DB storage)
         if (pkg.name === 'Golden Triangle Delight') {
@@ -227,9 +223,31 @@ class Package {
              pkg.itinerary = [];
              pkg.gallery = [];
         }
-       // ---------------------------------------------
 
       return pkg;
+  }
+
+  /**
+   * Finds a single package by its ID.
+   * @param {number} id - The ID of the package.
+   * @returns {Promise<object|null>} - A promise resolving to the package object or null.
+   */
+  static async findById(id) {
+    const sql = `
+        SELECT
+          id, name, places_json, nights, description,
+          included_json, price, image_url
+        FROM packages
+        WHERE id = ?
+      `;
+    const [rows] = await pool.execute(sql, [id]);
+    if (rows.length === 0) {
+      return null;
+    }
+    
+    // (We only need the price and existence, no need to parse JSON for booking)
+    // For simplicity, returning the raw row.
+    return rows[0];
   }
 
    /**
@@ -274,7 +292,6 @@ class Package {
         }
     }
 
-  // --- Add other methods as needed (update, delete) ---
 }
 
 export default Package;

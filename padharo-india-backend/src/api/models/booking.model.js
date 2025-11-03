@@ -1,3 +1,4 @@
+/* === Filename: src/api/models/booking.model.js === */
 import pool from '../../config/db.js';
 
 class Booking {
@@ -11,10 +12,8 @@ class Booking {
       user_id, service_type, service_id, room_id = null, start_date,
       end_date = null, pickup_location = null, dropoff_location = null,
       num_guests = 1, num_hours = null, distance_km = null, total_price,
-      status = 'Confirmed' // Default to Confirmed, could also be 'Pending'
+      status = 'Confirmed' // Default to Confirmed
     } = bookingData;
-
-    // Basic validation or calculation (e.g., calculate price based on service) should happen before calling this
 
     const sql = `
       INSERT INTO bookings (
@@ -34,8 +33,65 @@ class Booking {
         return result.insertId;
     } catch (error) {
         console.error("Error creating booking in DB:", error);
-        // Add specific error handling if needed (e.g., check service_id exists)
         throw error;
+    }
+  }
+
+  // --- NEWLY ADDED ---
+  /**
+   * Checks for conflicting bookings for a given service and date range.
+   * @param {string} service_type - 'Cab', 'Hotel', 'Guide'.
+   * @param {number} service_id - The ID of the cab, hotel, or guide.
+   * @param {number|null} room_id - The ID of the room (if service_type is 'Hotel').
+   * @param {string} start_date - ISO 8601 date string.
+   * @param {string|null} end_date - ISO 8601 date string (can be null for single-day).
+   * @returns {Promise<boolean>} - True if available, false if conflicting booking exists.
+   */
+  static async checkAvailability(service_type, service_id, room_id, start_date, end_date) {
+    // Packages are assumed to be always available (inventory not tracked here)
+    if (service_type === 'Package') {
+      return true;
+    }
+
+    // For single-day bookings (like Cabs), set end_date = start_date for overlap logic
+    // We'll assume start_date and end_date are valid ISO strings (e.g., '2025-11-20T10:00:00Z')
+    // MySQL can compare these.
+    const effective_end_date = end_date || start_date;
+
+    let sql = `
+      SELECT 1 FROM bookings
+      WHERE
+        service_type = ?
+        AND service_id = ?
+        AND status IN ('Confirmed', 'Pending') -- Ignore 'Cancelled' bookings
+    `;
+    const params = [service_type, service_id];
+
+    // If it's a Hotel booking, we must check the specific room_id
+    if (service_type === 'Hotel' && room_id) {
+      sql += ' AND room_id = ?';
+      params.push(room_id);
+    }
+
+    // Date Overlap Logic:
+    // A conflict exists if (New_Start < Old_End) AND (New_End > Old_Start)
+    // We must handle null end_dates in the DB (e.g., for single-day cab bookings)
+    sql += `
+      AND (
+        ? < (CASE WHEN end_date IS NOT NULL THEN end_date ELSE start_date END)
+        AND
+        ? > start_date
+      )
+      LIMIT 1;
+    `;
+    params.push(start_date, effective_end_date);
+
+    try {
+      const [rows] = await pool.execute(sql, params);
+      return rows.length === 0; // Return true (available) if no conflicting rows are found
+    } catch (error) {
+      console.error("Error in checkAvailability:", error);
+      throw error; // Let controller handle the error
     }
   }
 
@@ -128,14 +184,22 @@ class Booking {
    * @returns {Promise<boolean>} - A promise resolving to true if update was successful, false otherwise.
    */
   static async updateStatus(id, status, userId) {
-    const sql = `
+    let sql = `
       UPDATE bookings
       SET status = ?
-      WHERE id = ? AND user_id = ? -- Ensure user owns the booking
+      WHERE id = ? AND user_id = ?
     `;
-    // Add checks for valid status transitions if needed (e.g., can only cancel 'Pending' or 'Confirmed')
+    const params = [status, id, userId];
+
+    // --- MODIFIED ---
+    // Only allow 'Cancelled' if current status is 'Pending' or 'Confirmed'
+    if (status === 'Cancelled') {
+      sql += " AND status IN ('Confirmed', 'Pending')";
+    }
+    // --- END MODIFIED ---
+    
     try {
-        const [result] = await pool.execute(sql, [status, id, userId]);
+        const [result] = await pool.execute(sql, params);
         return result.affectedRows > 0; // Return true if a row was actually updated
     } catch (error) {
         console.error("Error updating booking status in DB:", error);
@@ -143,7 +207,6 @@ class Booking {
     }
   }
 
-  // --- Add other methods as needed ---
 }
 
 export default Booking;

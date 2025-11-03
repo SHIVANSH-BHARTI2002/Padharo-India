@@ -44,7 +44,7 @@ export const signup = async (req, res, next) => {
      if (userType === 'Business' && !businessType) {
          return res.status(400).json({ message: 'Business type is required for Business accounts.' });
     }
-     if (!['User', 'Business'].includes(userType)) {
+     if (!['User', 'Business','Admin'].includes(userType)) {
         return res.status(400).json({ message: 'Invalid user type.' });
     }
     // Validate specific business types based on frontend SignUpForm

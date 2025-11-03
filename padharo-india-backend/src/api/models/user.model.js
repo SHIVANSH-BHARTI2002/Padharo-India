@@ -1,5 +1,5 @@
-/* === Filename: padharo-india-backend/src/api/models/user.model.js === */
-import pool from '../../config/db.js'; // Corrected path depth
+/* === Filename: src/api/models/user.model.js === */
+import pool from '../../config/db.js'; //
 
 class User {
   static async createUser(userData) {
@@ -93,6 +93,66 @@ class User {
         }
         throw error; // Re-throw other errors
     }
+  }
+
+  // --- NEW ADMIN FUNCTIONS ---
+
+  /**
+   * (Admin) Finds all users, filtered by role or status.
+   * @param {object} filters - e.g., { role: 'Business', isVerified: false }
+   * @returns {Promise<Array>} - Array of non-sensitive user objects.
+   */
+  static async findAllUsersWithStatus(filters = {}) {
+      let sql = 'SELECT id, firstName, lastName, email, mobile, role, businessType, isVerified, createdAt FROM users';
+      const params = [];
+      const whereClauses = [];
+
+      if (filters.role) {
+          whereClauses.push('role = ?');
+          params.push(filters.role);
+      }
+      if (filters.isVerified !== undefined) {
+          whereClauses.push('isVerified = ?');
+          params.push(filters.isVerified);
+      }
+
+      if (whereClauses.length > 0) {
+          sql += ' WHERE ' + whereClauses.join(' AND ');
+      }
+      
+      sql += ' ORDER BY createdAt DESC';
+      
+      const [rows] = await pool.execute(sql, params);
+      return rows;
+  }
+
+  /**
+   * (Admin) Updates a user's status (e.g., verification, role).
+   * @param {number} userId - The ID of the user to update.
+   * @param {object} statusData - e.g., { isVerified: true, role: 'Admin' }
+   * @returns {Promise<boolean>} - True if successful.
+   */
+  static async updateUserStatus(userId, statusData) {
+      const allowedFields = ['isVerified', 'role', 'businessType'];
+      const setClauses = [];
+      const params = [];
+
+      for (const key in statusData) {
+          if (allowedFields.includes(key)) {
+              setClauses.push(`${key} = ?`);
+              params.push(statusData[key]);
+          }
+      }
+
+      if (setClauses.length === 0) {
+          return false;
+      }
+
+      const sql = `UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`;
+      params.push(userId);
+
+      const [result] = await pool.execute(sql, params);
+      return result.affectedRows > 0;
   }
 }
 

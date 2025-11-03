@@ -1,13 +1,72 @@
-/* === Filename: padharo-india-backend/src/api/controllers/guide.controller.js === */
+/* === Filename: controllers/guide.controller.js === */
 import Guide from '../models/guide.model.js';
 
 // --- Existing Controllers ---
-export const getAllGuides = async (req, res, next) => { /* ... Keep existing ... */ };
-export const getGuideById = async (req, res, next) => { /* ... Keep existing ... */ };
-export const createGuide = async (req, res, next) => { /* ... Keep existing ... */ };
+
+/**
+ * Controller to get a list of guides based on query filters.
+ */
+export const getAllGuides = async (req, res, next) => {
+  try {
+    // Extract filters from query parameters
+    const filters = {
+        query: req.query.query || '',
+        language: req.query.language || '',
+        specialty: req.query.specialty || ''
+    };
+
+    const guides = await Guide.findAll(filters); // Calls the model function
+
+    res.status(200).json(guides); // <-- Sends the response
+  } catch (error) {
+    console.error("Error in getAllGuides:", error);
+    next(error); // <-- Passes error to the handler
+  }
+};
+
+/**
+ * Controller to get details of a single guide by ID.
+ */
+export const getGuideById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const guide = await Guide.findById(id); // Calls the model function
+
+    if (!guide) {
+      return res.status(404).json({ message: 'Guide not found' });
+    }
+
+    res.status(200).json(guide); // <-- Sends the response
+  } catch (error) {
+    console.error(`Error in getGuideById (id: ${req.params.id}):`, error);
+    next(error); // <-- Passes error to the handler
+  }
+};
+
+/**
+ * Controller to create a new guide profile. Requires auth/role.
+ */
+export const createGuide = async (req, res, next) => {
+  try {
+    // Get guide user ID from the authenticated user object
+    const guideUserId = req.user.id;
+
+    const guideData = {
+        ...req.body,
+        guide_user_id: guideUserId // Add the guide user ID
+    };
+
+    const newGuideId = await Guide.create(guideData); // Calls the model function
+    res.status(201).json({ message: 'Guide profile created successfully', guideId: newGuideId });
+  } catch (error) {
+    console.error("Error in createGuide:", error);
+    next(error); // <-- Passes error to the handler
+  }
+};
+
 
 // --- NEW Controllers for Phase 3 ---
-
+// (Your existing updateGuide and deleteGuide functions)
 /**
  * Controller to update an existing guide profile. Requires authentication and ownership.
  */

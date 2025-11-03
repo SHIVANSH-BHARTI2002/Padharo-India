@@ -1,4 +1,5 @@
-import pool from '../../config/db.js';
+/* === Filename: src/api/models/review.model.js === */
+import pool from '../../config/db.js'; //
 
 class Review {
   /**
@@ -92,8 +93,22 @@ class Review {
     return rows;
   }
 
-  // --- Add other methods as needed (update, delete) ---
-  // static async delete(id, userId) { ... } // Ensure user owns the review before deleting
+  // --- NEW ADMIN FUNCTION ---
+  /**
+   * (Admin) Deletes any review by its ID.
+   * @param {number} reviewId - The ID of the review to delete.
+   * @returns {Promise<boolean>} - True if deletion was successful.
+   */
+  static async deleteById(reviewId) {
+    const sql = 'DELETE FROM reviews WHERE id = ?';
+    try {
+        const [result] = await pool.execute(sql, [reviewId]);
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error("Error deleting review from DB:", error);
+        throw error;
+    }
+  }
 }
 
 /**
