@@ -5,8 +5,8 @@ class User {
   static async createUser(userData) {
     const { firstName, lastName, email, mobile, hashedPassword, role, businessType } = userData;
     const sql = `
-      INSERT INTO users (firstName, lastName, email, mobile, password, role, businessType)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (firstName, lastName, email, mobile, password, role, businessType, isVerified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)
     `;
     const [result] = await pool.execute(sql, [firstName, lastName, email, mobile, hashedPassword, role, businessType || null]);
     return result.insertId;
@@ -31,25 +31,10 @@ class User {
     return rows[0];
   }
 
-  static async storeOtp(mobile, otp, expiry) {
-      const sql = 'UPDATE users SET otp = ?, otpExpiry = ? WHERE mobile = ? AND isVerified = FALSE';
-      const [result] = await pool.execute(sql, [otp, expiry, mobile]);
-      return result.affectedRows > 0;
-  }
-
-   static async verifyOtp(mobile, otp) {
-      // Fetches user ID if OTP is valid and not expired
-      const sql = 'SELECT id FROM users WHERE mobile = ? AND otp = ? AND otpExpiry > NOW() AND isVerified = FALSE';
-      const [rows] = await pool.execute(sql, [mobile, otp]);
-      return rows[0];
-   }
-
-   static async markAsVerified(userId) {
-       // Marks user as verified and clears OTP fields
-       const sql = 'UPDATE users SET isVerified = TRUE, otp = NULL, otpExpiry = NULL WHERE id = ?';
-       const [result] = await pool.execute(sql, [userId]);
-       return result.affectedRows > 0;
-   }
+  // --- Removed OTP-related functions ---
+  // static async storeOtp(mobile, otp, expiry) { ... }
+  // static async verifyOtp(mobile, otp) { ... }
+  // static async markAsVerified(userId) { ... }
 
   /**
    * Updates user data.
