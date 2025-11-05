@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 // Correctly locate .env
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../../.env') }); // Go up from controllers/ to src/ to backend/
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') }); // Go up from controllers/ to api/ to src/ to backend/
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
@@ -31,6 +31,7 @@ const generateToken = (userId) => {
 
 // --- NEW Validation Helpers ---
 const validateEmailDomain = (email) => {
+    // Allow common domains
     const allowedDomains = [
         'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'icloud.com', 'live.com'
     ];
@@ -110,6 +111,15 @@ export const signup = async (req, res, next) => {
         const token = generateToken(userId);
         const newUserDetails = await User.findById(userId);
 
+        // !!!!! THIS IS THE FIX !!!!!
+        // Add a safety check to ensure the user was found after creation
+        if (!newUserDetails) {
+            console.error(`FATAL: User with ID ${userId} was created but not found immediately after.`);
+            // Pass a new Error to the global error handler
+            return next(new Error('User account created but failed to retrieve details. Please contact support.'));
+        }
+        // !!!!! END FIX !!!!!
+
         res.status(201).json({
             message: `Signup successful! Welcome, ${newUserDetails.firstName}.`,
             token,
@@ -117,7 +127,7 @@ export const signup = async (req, res, next) => {
         });
 
     } catch (error) {
-        next(error);
+        next(error); // Pass errors to the global error handler
     }
 };
 
@@ -150,6 +160,11 @@ export const login = async (req, res, next) => {
         const token = generateToken(user.id);
          const userDetails = await User.findById(user.id);
 
+        // Safety check (similar to signup)
+        if (!userDetails) {
+             console.error(`FATAL: User with ID ${user.id} logged in but could not be found.`);
+             return next(new Error('Login successful but failed to retrieve user details.'));
+        }
 
         res.status(200).json({
             message: 'Login successful!',
@@ -158,7 +173,7 @@ export const login = async (req, res, next) => {
         });
 
     } catch (error) {
-        next(error);
+        next(error); // Pass errors to the global error handler
     }
 };
 

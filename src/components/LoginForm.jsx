@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext'; // Import the hook
 
-const LoginForm = ({ onToggle, userType, setUserType }) => {
+// Add onClose prop to be called on success
+const LoginForm = ({ onToggle, userType, onClose }) => { 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
 
+    // Get auth functions and state from context
+    const { login, loading, error, clearError } = useAuth();
+
     const handleInputChange = (e) => {
+        // Clear error on new input
+        if (error) clearError(); 
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Login submitted:', formData, 'as', userType);
+        if (error) clearError();
+        
+        const success = await login(formData.email, formData.password);
+        
+        if (success) {
+            onClose(); // Close modal on successful login
+        }
+        // If not successful, the 'error' state will be set by the context
+        // and displayed below.
     };
 
     return (
@@ -27,6 +42,13 @@ const LoginForm = ({ onToggle, userType, setUserType }) => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
                 <p className="text-gray-600">Sign in to continue your journey as a {userType}</p>
             </div>
+
+            {/* Display API Error */}
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,13 +131,14 @@ const LoginForm = ({ onToggle, userType, setUserType }) => {
                 {/* Login Button */}
                 <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50"
+                    disabled={loading} // Disable button while loading
+                    className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Sign In
+                    {loading ? 'Signing In...' : 'Sign In'}
                 </button>
             </form>
 
-            {/* Divider */}
+            {/* Divider and Social Login (unchanged) */}
             <div className="mt-8 mb-6">
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
@@ -126,8 +149,6 @@ const LoginForm = ({ onToggle, userType, setUserType }) => {
                     </div>
                 </div>
             </div>
-
-            {/* Social Login */}
             <button
                 type="button"
                 className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
@@ -140,13 +161,11 @@ const LoginForm = ({ onToggle, userType, setUserType }) => {
                 </svg>
                 Continue with Google
             </button>
-
-            {/* Toggle to Sign Up */}
             <p className="mt-8 text-center text-gray-600">
                 Don't have an account?{' '}
                 <button
                     type="button"
-                    onClick={onToggle}
+                    onClick={() => { onToggle(); clearError(); }} // Clear error on toggle
                     className="text-amber-600 hover:text-amber-500 font-semibold transition-colors duration-300 hover:underline"
                 >
                     Sign up now

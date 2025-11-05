@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline'; // Added BuildingOffice2Icon
-import OtpVerification from './OtpVerification'; // Import the new OTP component
+import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
+// import OtpVerification from './OtpVerification'; // No longer needed
+import { useAuth } from '../context/AuthContext'; // Import the hook
 
-const SignUpForm = ({ onToggle, userType, setUserType }) => {
+// Add onClose prop
+const SignUpForm = ({ onToggle, userType, setUserType, onClose }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [formData, setFormData] = useState({
@@ -12,29 +14,34 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
         mobile: '',
         password: ''
     });
-    // Add state for business type
     const [businessType, setBusinessType] = useState('');
-    const [showOtp, setShowOtp] = useState(false);
+    // const [showOtp, setShowOtp] = useState(false); // No longer needed
+
+    // Get auth functions and state from context
+    const { signup, loading, error, clearError } = useAuth();
 
     const handleInputChange = (e) => {
+        if (error) clearError(); // Clear error on new input
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
     };
 
-    // Handler for business type dropdown
     const handleBusinessTypeChange = (e) => {
+        if (error) clearError();
         setBusinessType(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        if (error) clearError();
+
         if (!acceptTerms) {
             alert('Please accept the terms and conditions');
             return;
         }
-        // Include businessType if userType is 'Business'
+
         const submissionData = {
             ...formData,
             userType: userType,
@@ -46,14 +53,20 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
             return;
         }
 
-        console.log('Sign up submitted:', submissionData);
-        // Here you would typically send the data to your backend to send an OTP
-        setShowOtp(true); // Show OTP form
+        // Your backend auth.controller.js now validates password strength
+        // and email domain, so we can rely on its error messages.
+
+        const success = await signup(submissionData);
+
+        if (success) {
+            onClose(); // Close modal on successful signup
+        }
+        // If not successful, 'error' state will be set
     };
 
-    if (showOtp) {
-        return <OtpVerification mobileNumber={formData.mobile} />;
-    }
+    // if (showOtp) { // This logic is removed as per backend changes
+    //     return <OtpVerification mobileNumber={formData.mobile} />;
+    // }
 
     return (
         <div className="w-full">
@@ -63,11 +76,17 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                 <p className="text-gray-600">Create your {userType} account and start exploring</p>
             </div>
 
+            {/* Display API Error */}
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Fields */}
+                {/* Name Fields (unchanged) */}
                 <div className="grid grid-cols-2 gap-4">
-                    {/* ... (First Name and Last Name inputs remain the same) ... */}
                      <div>
                         <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
                             First Name
@@ -110,8 +129,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                         </div>
                     </div>
                 </div>
-
-                {/* Email Field */}
+                {/* Email Field (unchanged) */}
                  <div>
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                         Email Address
@@ -132,9 +150,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                         />
                     </div>
                 </div>
-
-
-                {/* Mobile Number Field */}
+                {/* Mobile Number Field (unchanged) */}
                  <div>
                     <label htmlFor="mobile" className="block text-sm font-semibold text-gray-700 mb-2">
                         Mobile Number
@@ -155,9 +171,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                         />
                     </div>
                 </div>
-
-
-                {/* Password Field */}
+                {/* Password Field (unchanged) */}
                  <div>
                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                         Password
@@ -189,9 +203,7 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                         </button>
                     </div>
                 </div>
-
-
-                {/* --- Business Type Dropdown (Conditional) --- */}
+                {/* Business Type Dropdown (unchanged) */}
                 {userType === 'Business' && (
                     <div>
                         <label htmlFor="businessType" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -214,13 +226,10 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                                 <option value="Guide">Tour Guide</option>
                                 <option value="Cab">Cab Service</option>
                             </select>
-                            {/* You might want a dropdown icon here */}
                         </div>
                     </div>
                 )}
-                {/* --- End of Business Type Dropdown --- */}
-
-                {/* Terms and Conditions */}
+                {/* Terms and Conditions (unchanged) */}
                  <div className="flex items-start space-x-3">
                     <div className="flex items-center h-6">
                         <input
@@ -241,22 +250,20 @@ const SignUpForm = ({ onToggle, userType, setUserType }) => {
                         </label>
                     </div>
                 </div>
-
                 {/* Sign Up Button */}
                 <button
                     type="submit"
+                    disabled={loading || !acceptTerms || (userType === 'Business' && !businessType)}
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    disabled={!acceptTerms || (userType === 'Business' && !businessType)}
                 >
-                    Create Account
+                    {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
-
                  {/* Toggle to Login */}
                  <p className="mt-8 text-center text-gray-600">
                     Already have an account?{' '}
                     <button
                         type="button"
-                        onClick={onToggle}
+                        onClick={() => { onToggle(); clearError(); }} // Clear error on toggle
                         className="text-amber-600 hover:text-amber-500 font-semibold transition-colors duration-300 hover:underline"
                     >
                         Sign in here
