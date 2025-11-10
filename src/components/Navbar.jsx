@@ -1,19 +1,22 @@
+/* === Filename: src/components/Navbar.jsx === */
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { 
     Bars3Icon, 
     XMarkIcon, 
     UserIcon, 
-    ArrowLeftOnRectangleIcon 
+    ArrowLeftOnRectangleIcon,
+    BriefcaseIcon, 
+    BuildingOffice2Icon,
+    ShieldCheckIcon // --- NEW IMPORT ---
 } from '@heroicons/react/24/outline';
-import { useAuth } from '../context/AuthContext'; // Import the hook
-import defaultAvatar from '../assets/man.png'; // Placeholder avatar
+import { useAuth } from '../context/AuthContext'; 
+import defaultAvatar from '../assets/man.png'; 
 
 const Navbar = ({ onLoginClick }) => {
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
-    // Get state and functions from AuthContext
     const { isLoggedIn, user, logout } = useAuth();
 
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -29,29 +32,22 @@ const Navbar = ({ onLoginClick }) => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Handle click outside to close profile dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
                 setIsProfileOpen(false);
             }
         };
-
         if (isProfileOpen) {
             document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
         }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isProfileOpen]);
 
     const navLinks = ['Home', 'Cabs', 'Hotels', 'Guides', 'Packages'];
 
     const handleLogout = () => {
-        logout(); // Call logout from context
+        logout();
         setIsProfileOpen(false);
         setIsMenuOpen(false);
     };
@@ -105,7 +101,6 @@ const Navbar = ({ onLoginClick }) => {
                     <div className="hidden md:block">
                         {isLoggedIn ? (
                             <div className="relative" ref={profileMenuRef}>
-                                {/* Profile Icon Button */}
                                 <button
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className={`flex items-center justify-center h-10 w-10 rounded-full overflow-hidden border-2 transition-colors duration-300
@@ -113,21 +108,31 @@ const Navbar = ({ onLoginClick }) => {
                                         ${scrolled || isMenuOpen ? 'hover:border-amber-400' : 'hover:border-white/50'}`}
                                 >
                                     <img 
-                                        src={defaultAvatar} // Use placeholder for now
+                                        src={defaultAvatar} 
                                         alt="Profile" 
                                         className="h-full w-full object-cover"
                                     />
                                 </button>
 
-                                {/* Profile Dropdown */}
                                 {isProfileOpen && (
                                     <div className="absolute top-14 right-0 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-down z-50">
                                         <div className="p-4 border-b border-gray-100">
-                                            {/* Use user object from context */}
                                             <p className="font-semibold text-gray-800">{user?.firstName} {user?.lastName}</p>
                                             <p className="text-sm text-gray-500 truncate">{user?.email}</p>
                                         </div>
                                         <nav className="py-2">
+                                            {/* --- NEW: Admin Dashboard Link --- */}
+                                            {user?.role === 'Admin' && (
+                                                <Link
+                                                    to="/admin"
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-amber-600 transition-colors duration-200"
+                                                >
+                                                    <ShieldCheckIcon className="h-5 w-5 mr-3" />
+                                                    Admin Dashboard
+                                                </Link>
+                                            )}
+                                        
                                             <Link
                                                 to="/profile"
                                                 onClick={() => setIsProfileOpen(false)}
@@ -136,7 +141,7 @@ const Navbar = ({ onLoginClick }) => {
                                                 <UserIcon className="h-5 w-5 mr-3" />
                                                 View Profile
                                             </Link>
-                                            {/* Link to Driver/Business Profile if applicable */}
+                                            
                                             {user?.role === 'Business' && user?.businessType === 'Cab' && (
                                                 <Link
                                                     to="/driver-profile"
@@ -147,7 +152,28 @@ const Navbar = ({ onLoginClick }) => {
                                                     Driver Dashboard
                                                 </Link>
                                             )}
-                                            {/* Add links for Hotel/Guide dashboards here */}
+                                            
+                                            {user?.role === 'Business' && user?.businessType === 'Guide' && (
+                                                <Link
+                                                    to="/dashboard/guide"
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-amber-600 transition-colors duration-200"
+                                                >
+                                                    <BriefcaseIcon className="h-5 w-5 mr-3" />
+                                                    Guide Dashboard
+                                                </Link>
+                                            )}
+
+                                            {user?.role === 'Business' && user?.businessType === 'Hotel' && (
+                                                <Link
+                                                    to="/dashboard/hotel"
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-amber-600 transition-colors duration-200"
+                                                >
+                                                    <BuildingOffice2Icon className="h-5 w-5 mr-3" />
+                                                    Hotel Dashboard
+                                                </Link>
+                                            )}
                                             
                                             <button
                                                 onClick={handleLogout}
@@ -161,7 +187,6 @@ const Navbar = ({ onLoginClick }) => {
                                 )}
                             </div>
                         ) : (
-                            // Original Login Button
                             <button
                                 onClick={onLoginClick}
                                 className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 
@@ -206,6 +231,18 @@ const Navbar = ({ onLoginClick }) => {
                         ))}
                          {isLoggedIn ? (
                             <>
+                                {/* --- NEW: Admin Link for Mobile --- */}
+                                {user?.role === 'Admin' && (
+                                     <li>
+                                        <NavLink
+                                            to="/admin"
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="text-lg font-medium text-gray-700"
+                                        >
+                                            Admin Dashboard
+                                        </NavLink>
+                                    </li>
+                                )}
                                 <li>
                                     <NavLink
                                         to="/profile"
@@ -223,6 +260,28 @@ const Navbar = ({ onLoginClick }) => {
                                             className="text-lg font-medium text-gray-700"
                                         >
                                             Driver Dashboard
+                                        </NavLink>
+                                    </li>
+                                )}
+                                {user?.role === 'Business' && user?.businessType === 'Guide' && (
+                                     <li>
+                                        <NavLink
+                                            to="/dashboard/guide"
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="text-lg font-medium text-gray-700"
+                                        >
+                                            Guide Dashboard
+                                        </NavLink>
+                                    </li>
+                                )}
+                                {user?.role === 'Business' && user?.businessType === 'Hotel' && (
+                                     <li>
+                                        <NavLink
+                                            to="/dashboard/hotel"
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="text-lg font-medium text-gray-700"
+                                        >
+                                            Hotel Dashboard
                                         </NavLink>
                                     </li>
                                 )}
