@@ -11,7 +11,7 @@ The project is built with a modern tech stack, featuring a React frontend and a 
   * **Database:** MySQL
   * **Authentication:** JSON Web Tokens (JWT), bcrypt
   * **Build Tool:** Vite
-  * **API Testing/Development:** (Implicitly, tools like Postman or Insomnia would be used)
+  * **API Testing/Development:** POSTMAN 
 
 ## Getting Started
 
