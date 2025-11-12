@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, CalendarDaysIcon, StarIcon, CurrencyDollarIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
-const HotelSearchBox = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [sortBy, setSortBy] = useState('');
+// Controlled search box that syncs with parent filters
+const HotelSearchBox = ({ filters, setFilters }) => {
+    const [searchQuery, setSearchQuery] = useState(filters?.query || '');
+    const [startDate, setStartDate] = useState(filters?.startDate || '');
+    const [endDate, setEndDate] = useState(filters?.endDate || '');
+    const [sortBy, setSortBy] = useState(filters?.sort || '');
+
+    // Sync local state to parent filters when inputs change
+    useEffect(() => {
+        setFilters(prev => ({
+            ...prev,
+            query: searchQuery,
+            startDate,
+            endDate,
+            sort: sortBy
+        }));
+    }, [searchQuery, startDate, endDate, sortBy, setFilters]);
 
     const handleSearch = () => {
+        // No-op since we update filters on change; keep for future submit handling
         console.log('Searching for hotels...', { searchQuery, startDate, endDate, sortBy });
-        alert('Searching for hotels!');
     };
 
     return (
@@ -62,7 +74,7 @@ const HotelSearchBox = () => {
 
                         {/* Sort Filter */}
                         <div className="relative">
-                             <StarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <StarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
@@ -70,10 +82,10 @@ const HotelSearchBox = () => {
                             >
                                 <option value="">Sort by</option>
                                 <option value="rating">Highest Rated</option>
-                                <option value="price-low">Price: Low to High</option>
-                                <option value="price-high">Price: High to Low</option>
+                                <option value="priceLowHigh">Price: Low to High</option>
+                                <option value="priceHighLow">Price: High to Low</option>
                             </select>
-                            <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none"/>
+                            <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                         </div>
 
                         {/* Search Button */}

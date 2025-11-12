@@ -1,7 +1,7 @@
 import React from "react";
 import { FaStar, FaSpa, FaSwimmer, FaDumbbell, FaUtensils, FaCocktail } from "react-icons/fa";
 
-const RoomCard = ({ room }) => {
+const RoomCard = ({ room, onSelect }) => {
   return (
     <div className="bg-white rounded-2xl shadow-md border hover:shadow-xl transition overflow-hidden">
       <div className="flex flex-col md:flex-row">
@@ -38,7 +38,10 @@ const RoomCard = ({ room }) => {
                 +₹{room.taxes.toLocaleString()} taxes & fees
               </p>
             </div>
-            <button className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:opacity-90 transition">
+            <button
+              onClick={() => onSelect ? onSelect(room) : null}
+              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:opacity-90 transition"
+            >
               Select
             </button>
           </div>

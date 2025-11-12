@@ -1,22 +1,22 @@
 /* === Filename: src/components/Navbar.jsx === */
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { 
-    Bars3Icon, 
-    XMarkIcon, 
-    UserIcon, 
+import {
+    Bars3Icon,
+    XMarkIcon,
+    UserIcon,
     ArrowLeftOnRectangleIcon,
-    BriefcaseIcon, 
+    BriefcaseIcon,
     BuildingOffice2Icon,
     ShieldCheckIcon // --- NEW IMPORT ---
 } from '@heroicons/react/24/outline';
-import { useAuth } from '../context/AuthContext'; 
-import defaultAvatar from '../assets/man.png'; 
+import { useAuth } from '../context/AuthContext';
+import defaultAvatar from '../assets/man.png';
 
 const Navbar = ({ onLoginClick }) => {
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
+
     const { isLoggedIn, user, logout } = useAuth();
 
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -44,7 +44,7 @@ const Navbar = ({ onLoginClick }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isProfileOpen]);
 
-    const navLinks = ['Home', 'Cabs', 'Hotels', 'Guides', 'Packages'];
+    const navLinks = ['Home', /* 'Cabs', */ 'Hotels', 'Guides', 'Packages'];
 
     const handleLogout = () => {
         logout();
@@ -53,17 +53,15 @@ const Navbar = ({ onLoginClick }) => {
     };
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            scrolled || isMenuOpen
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || isMenuOpen
                 ? 'bg-white/95 backdrop-blur-lg shadow-lg'
                 : 'bg-transparent'
-        }`}>
+            }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16 lg:h-20">
                     {/* Logo */}
-                    <div className={`text-2xl lg:text-3xl font-bold transition-colors duration-300 ${
-                        scrolled || isMenuOpen ? 'text-amber-600' : 'text-white'
-                    }`}>
+                    <div className={`text-2xl lg:text-3xl font-bold transition-colors duration-300 ${scrolled || isMenuOpen ? 'text-amber-600' : 'text-white'
+                        }`}>
                         <NavLink to="/" onClick={() => setIsMenuOpen(false)}>
                             <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
                                 Padharo
@@ -107,9 +105,9 @@ const Navbar = ({ onLoginClick }) => {
                                         ${isProfileOpen ? 'border-amber-500' : 'border-transparent'}
                                         ${scrolled || isMenuOpen ? 'hover:border-amber-400' : 'hover:border-white/50'}`}
                                 >
-                                    <img 
-                                        src={defaultAvatar} 
-                                        alt="Profile" 
+                                    <img
+                                        src={user?.profileImageUrl || defaultAvatar}
+                                        alt="Profile"
                                         className="h-full w-full object-cover"
                                     />
                                 </button>
@@ -132,7 +130,7 @@ const Navbar = ({ onLoginClick }) => {
                                                     Admin Dashboard
                                                 </Link>
                                             )}
-                                        
+
                                             <Link
                                                 to="/profile"
                                                 onClick={() => setIsProfileOpen(false)}
@@ -141,7 +139,7 @@ const Navbar = ({ onLoginClick }) => {
                                                 <UserIcon className="h-5 w-5 mr-3" />
                                                 View Profile
                                             </Link>
-                                            
+
                                             {user?.role === 'Business' && user?.businessType === 'Cab' && (
                                                 <Link
                                                     to="/driver-profile"
@@ -152,7 +150,7 @@ const Navbar = ({ onLoginClick }) => {
                                                     Driver Dashboard
                                                 </Link>
                                             )}
-                                            
+
                                             {user?.role === 'Business' && user?.businessType === 'Guide' && (
                                                 <Link
                                                     to="/dashboard/guide"
@@ -174,7 +172,7 @@ const Navbar = ({ onLoginClick }) => {
                                                     Hotel Dashboard
                                                 </Link>
                                             )}
-                                            
+
                                             <button
                                                 onClick={handleLogout}
                                                 className="flex items-center w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-amber-600 transition-colors duration-200"
@@ -202,9 +200,8 @@ const Navbar = ({ onLoginClick }) => {
                     <div className="md:hidden">
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className={`p-2 rounded-md transition-colors duration-300 ${
-                                scrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
-                            }`}>
+                            className={`p-2 rounded-md transition-colors duration-300 ${scrolled || isMenuOpen ? 'text-gray-700' : 'text-white'
+                                }`}>
                             {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
                         </button>
                     </div>
@@ -213,9 +210,9 @@ const Navbar = ({ onLoginClick }) => {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                 <div className="md:hidden bg-white shadow-lg animate-fade-in-down">
+                <div className="md:hidden bg-white shadow-lg animate-fade-in-down">
                     <ul className="flex flex-col items-center space-y-6 py-8">
-                         {navLinks.map((item) => (
+                        {navLinks.map((item) => (
                             <li key={item}>
                                 <NavLink
                                     to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
@@ -229,11 +226,11 @@ const Navbar = ({ onLoginClick }) => {
                                 </NavLink>
                             </li>
                         ))}
-                         {isLoggedIn ? (
+                        {isLoggedIn ? (
                             <>
                                 {/* --- NEW: Admin Link for Mobile --- */}
                                 {user?.role === 'Admin' && (
-                                     <li>
+                                    <li>
                                         <NavLink
                                             to="/admin"
                                             onClick={() => setIsMenuOpen(false)}
@@ -253,7 +250,7 @@ const Navbar = ({ onLoginClick }) => {
                                     </NavLink>
                                 </li>
                                 {user?.role === 'Business' && user?.businessType === 'Cab' && (
-                                     <li>
+                                    <li>
                                         <NavLink
                                             to="/driver-profile"
                                             onClick={() => setIsMenuOpen(false)}
@@ -264,7 +261,7 @@ const Navbar = ({ onLoginClick }) => {
                                     </li>
                                 )}
                                 {user?.role === 'Business' && user?.businessType === 'Guide' && (
-                                     <li>
+                                    <li>
                                         <NavLink
                                             to="/dashboard/guide"
                                             onClick={() => setIsMenuOpen(false)}
@@ -275,7 +272,7 @@ const Navbar = ({ onLoginClick }) => {
                                     </li>
                                 )}
                                 {user?.role === 'Business' && user?.businessType === 'Hotel' && (
-                                     <li>
+                                    <li>
                                         <NavLink
                                             to="/dashboard/hotel"
                                             onClick={() => setIsMenuOpen(false)}
@@ -294,7 +291,7 @@ const Navbar = ({ onLoginClick }) => {
                                     </button>
                                 </li>
                             </>
-                         ) : (
+                        ) : (
                             <li>
                                 <button
                                     onClick={() => {
@@ -306,7 +303,7 @@ const Navbar = ({ onLoginClick }) => {
                                     Login
                                 </button>
                             </li>
-                         )}
+                        )}
                     </ul>
                 </div>
             )}

@@ -1,75 +1,60 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CabCard from '../components/cards/CabCard';
 import CabSearchBox from '../components/search box/CabSearchBox';
-import heroImage from '../assets/car2.jpg'; 
-import swift from '../assets/swift.png';
-import innova from '../assets/innova.png';
-import honda_city from '../assets/honda_city.png';
-import marazzo from '../assets/marazzo.png';
-
-const allCabs = [
-    {
-        image: swift,
-        name: 'Maruti Swift Dzire',
-        driver: 'Ramesh Singh',
-        rating: 4.8,
-        seats: 4,
-        price: 250,
-        description: 'A comfortable and fuel-efficient sedan, perfect for city tours and short trips. Air-conditioned with a music system.',
-        type: 'Sedan'
-    },
-    {
-        image: innova,
-        name: 'Toyota Innova Crysta',
-        driver: 'Suresh Verma',
-        rating: 4.9,
-        seats: 7,
-        price: 450,
-        description: 'Spacious, comfortable, and reliable. Ideal for family vacations, airport transfers, and long-distance travel.',
-        type: 'SUV'
-    },
-    {
-        image:marazzo,
-        name: 'Mahindra Marazzo',
-        driver: 'Vikram Rathore',
-        rating: 4.7,
-        seats: 6,
-        price: 400,
-        description: 'A stylish and safe MPV with ample space for luggage. Perfect for group outings and exploring the countryside.',
-        type: 'MPV'
-    },
-    {
-        image: honda_city,
-        name: 'Honda City',
-        driver: 'Anil Kapoor',
-        rating: 4.6,
-        seats: 4,
-        price: 300,
-        description: 'A premium sedan experience with a smooth ride and modern features. Great for business travel.',
-        type: 'Sedan'
-    }
-];
+import heroImage from '../assets/car2.jpg';
+import { apiGetCabs } from '../apiService';
 
 const CabsPage = () => {
-    const [filters, setFilters] = useState({
-        query: '',
-        seats: '',
-        type: '',
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialFilters = {
+        query: searchParams.get('query') || '',
+        seats: searchParams.get('seats') || '',
+        type: searchParams.get('type') || '',
         sort: ''
-    });
+    };
+    const [filters, setFilters] = useState(initialFilters);
+    const [cabs, setCabs] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const filteredCabs = useMemo(() => {
-        let filtered = allCabs.filter(cab => {
-            const queryMatch = filters.query.toLowerCase() === '' ||
-                               cab.name.toLowerCase().includes(filters.query.toLowerCase()) ||
-                               cab.driver.toLowerCase().includes(filters.query.toLowerCase());
-            const seatsMatch = filters.seats === '' || cab.seats >= parseInt(filters.seats);
-            const typeMatch = filters.type === '' || cab.type === filters.type;
-            return queryMatch && seatsMatch && typeMatch;
-        });
-        
-        return filtered;
-    }, [filters]);
+    useEffect(() => {
+        let cancelled = false;
+        const run = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const data = await apiGetCabs({
+                    query: filters.query,
+                    seats: filters.seats ? Number(filters.seats) : undefined,
+                    type: filters.type || undefined,
+                });
+                const mapped = (Array.isArray(data) ? data : []).map((d) => ({
+                    image: d.image_url || '',
+                    name: d.model || 'Cab',
+                    driver: [d.driverFirstName, d.driverLastName].filter(Boolean).join(' '),
+                    rating: undefined,
+                    seats: d.seats,
+                    price: d.base_rate_hour,
+                    description: '',
+                    type: d.type,
+                }));
+                if (!cancelled) setCabs(mapped);
+            } catch (err) {
+                if (!cancelled) setError(err.message || 'Failed to fetch cabs');
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+        const next = new URLSearchParams();
+        if (filters.query) next.set('query', filters.query);
+        if (filters.seats) next.set('seats', String(filters.seats));
+        if (filters.type) next.set('type', filters.type);
+        setSearchParams(next);
+        run();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters.query, filters.seats, filters.type]);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -103,14 +88,18 @@ const CabsPage = () => {
                             Available Cabs
                         </h2>
                         <p className="text-gray-600">
-                            Showing {filteredCabs.length} cabs matching your criteria
+                            {loading ? 'Loading cabs...' : `Showing ${cabs.length} cabs matching your criteria`}
                         </p>
                     </div>
                 </div>
 
-                {filteredCabs.length > 0 ? (
-                     <div className="space-y-8">
-                        {filteredCabs.map((cab, index) => (
+                {error && (
+                    <div className="text-red-600 mb-6">{error}</div>
+                )}
+
+                {cabs.length > 0 ? (
+                    <div className="space-y-8">
+                        {cabs.map((cab, index) => (
                             <div
                                 key={index}
                                 className="animate-fade-in-up"
@@ -127,7 +116,7 @@ const CabsPage = () => {
                     </div>
                 )}
 
-                 <div className="text-center mt-12">
+                <div className="text-center mt-12">
                     <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-3 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                         Load More Cabs
                     </button>

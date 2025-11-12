@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         setError(null);
         try {
             // Your backend signup controller now returns token and user directly
-            const data = await apiSignup(signupData); 
+            const data = await apiSignup(signupData);
             handleAuthSuccess(data);
             return true; // Indicate success
         } catch (err) {
@@ -81,6 +81,16 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
     };
 
+    // Allow consumers to update user object (e.g., after avatar upload)
+    const updateUser = (nextUser) => {
+        setUser(nextUser);
+        try {
+            localStorage.setItem('user', JSON.stringify(nextUser));
+        } catch (e) {
+            /* ignore storage errors */
+        }
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -92,6 +102,7 @@ export const AuthProvider = ({ children }) => {
                 login,
                 signup,
                 logout,
+                updateUser,
                 clearError: () => setError(null) // Helper to clear errors
             }}
         >

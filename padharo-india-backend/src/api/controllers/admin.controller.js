@@ -29,12 +29,12 @@ export const updateUserStatus = async (req, res, next) => {
     try {
         const { userId } = req.params;
         const { isVerified, role, businessType } = req.body;
-        
+
         const statusData = {};
         if (isVerified !== undefined) statusData.isVerified = isVerified;
         if (role) statusData.role = role;
         if (businessType) statusData.businessType = businessType; // Allow changing type
-        
+
         if (Object.keys(statusData).length === 0) {
             return res.status(400).json({ message: 'No valid status fields provided.' });
         }
@@ -113,7 +113,7 @@ export const addAdminMessage = async (req, res, next) => {
 
         // Add the message as the admin user
         const newMessageId = await SupportModel.addMessage(queryId, adminUserId, message);
-        
+
         // Optional: Re-open the ticket if it was closed
         if (query.status === 'Closed') {
             await SupportModel.updateQueryStatus(queryId, 'In Progress');
@@ -158,7 +158,7 @@ export const updateQueryStatus = async (req, res, next) => {
 export const deleteReview = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
-        
+
         const success = await Review.deleteById(reviewId); // Using the new method
         if (!success) {
             return res.status(404).json({ message: 'Review not found.' });
@@ -167,6 +167,20 @@ export const deleteReview = async (req, res, next) => {
         res.status(200).json({ message: 'Review deleted successfully.' });
     } catch (error) {
         console.error("Error in deleteReview admin controller:", error);
+        next(error);
+    }
+};
+
+// --- Review Moderation ---
+/**
+ * (Admin) Get all reviews with user info.
+ */
+export const getAllReviews = async (req, res, next) => {
+    try {
+        const reviews = await Review.findAllWithUser();
+        res.status(200).json(reviews);
+    } catch (error) {
+        console.error("Error in getAllReviews admin controller:", error);
         next(error);
     }
 };

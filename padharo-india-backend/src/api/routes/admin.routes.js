@@ -8,7 +8,8 @@ import {
     getQueryById,
     addAdminMessage,
     updateQueryStatus,
-    deleteReview 
+    deleteReview,
+    getAllReviews
 } from '../controllers/admin.controller.js';
 import { authenticateToken, checkRole } from '../middleware/auth.middleware.js'; //
 
@@ -100,6 +101,13 @@ router.patch(
 );
 
 // --- Content Management (Example) ---
+// GET /api/admin/reviews - List all reviews
+router.get(
+    '/reviews',
+    handleValidationErrors,
+    getAllReviews
+);
+
 // DELETE /api/admin/reviews/:reviewId
 router.delete(
     '/reviews/:reviewId',

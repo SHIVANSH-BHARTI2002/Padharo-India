@@ -25,19 +25,19 @@ class Review {
     ];
 
     try {
-        const [result] = await pool.execute(sql, params);
-        return result.insertId;
+      const [result] = await pool.execute(sql, params);
+      return result.insertId;
     } catch (error) {
-        console.error("Error creating review in DB:", error);
-        // Handle potential foreign key errors if booking_id or user_id is invalid
-        if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-            if (error.message.includes('fk_reviews_user')) { // Adjust constraint name if different
-                 throw new Error('User not found.');
-            } else if (error.message.includes('fk_reviews_booking')) { // Adjust constraint name if different
-                 throw new Error('Associated booking not found.');
-            }
+      console.error("Error creating review in DB:", error);
+      // Handle potential foreign key errors if booking_id or user_id is invalid
+      if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+        if (error.message.includes('fk_reviews_user')) { // Adjust constraint name if different
+          throw new Error('User not found.');
+        } else if (error.message.includes('fk_reviews_booking')) { // Adjust constraint name if different
+          throw new Error('Associated booking not found.');
         }
-        throw error;
+      }
+      throw error;
     }
   }
 
@@ -93,6 +93,29 @@ class Review {
     return rows;
   }
 
+  /**
+   * (Admin) Find all reviews with reviewer user name.
+   * @returns {Promise<Array>} - Array of review rows including user name fields.
+   */
+  static async findAllWithUser() {
+    const sql = `
+      SELECT
+        r.id, r.user_id, r.service_type, r.service_id, r.booking_id,
+        r.rating, r.comment, r.review_date,
+        u.firstName AS userFirstName, u.lastName AS userLastName
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      ORDER BY r.review_date DESC;
+    `;
+    try {
+      const [rows] = await pool.execute(sql);
+      return rows;
+    } catch (error) {
+      console.error("Error fetching all reviews from DB:", error);
+      throw error;
+    }
+  }
+
   // --- NEW ADMIN FUNCTION ---
   /**
    * (Admin) Deletes any review by its ID.
@@ -102,11 +125,11 @@ class Review {
   static async deleteById(reviewId) {
     const sql = 'DELETE FROM reviews WHERE id = ?';
     try {
-        const [result] = await pool.execute(sql, [reviewId]);
-        return result.affectedRows > 0;
+      const [result] = await pool.execute(sql, [reviewId]);
+      return result.affectedRows > 0;
     } catch (error) {
-        console.error("Error deleting review from DB:", error);
-        throw error;
+      console.error("Error deleting review from DB:", error);
+      throw error;
     }
   }
 }
@@ -117,12 +140,12 @@ class Review {
  * @returns {number} - The calculated average rating (e.g., 4.7) or 0 if no reviews.
  */
 export const calculateAverageRating = (reviews) => {
-    if (!reviews || reviews.length === 0) {
-        return 0;
-    }
-    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    const average = totalRating / reviews.length;
-    return parseFloat(average.toFixed(1)); // Round to one decimal place
+  if (!reviews || reviews.length === 0) {
+    return 0;
+  }
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  const average = totalRating / reviews.length;
+  return parseFloat(average.toFixed(1)); // Round to one decimal place
 };
 
 

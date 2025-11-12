@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, MapPinIcon, CalendarIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 
 const SearchBox = () => {
@@ -6,10 +7,43 @@ const SearchBox = () => {
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedService, setSelectedService] = useState('');
     const [sortBy, setSortBy] = useState('');
+    const navigate = useNavigate();
 
     const handleSearch = () => {
-        console.log('Searching...', { searchQuery, selectedDate, selectedService, sortBy });
-        alert('Exploring all destinations!');
+        // Map sort options per service
+        const hotelSortMap = {
+            'price-low': 'priceLowHigh',
+            'price-high': 'priceHighLow',
+            'rating': 'rating',
+        };
+
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('query', searchQuery);
+
+        // Default to hotels if no service chosen
+        const service = selectedService || 'hotels';
+
+        if (service === 'hotels') {
+            const mapped = hotelSortMap[sortBy];
+            if (mapped) params.set('sort', mapped);
+            navigate(params.toString() ? `/hotels?${params.toString()}` : '/hotels');
+            return;
+        }
+        if (service === 'guides') {
+            // Guides support query, language, specialty — we only pass query from home
+            navigate(params.toString() ? `/guides?${params.toString()}` : '/guides');
+            return;
+        }
+        if (service === 'packages') {
+            // Packages support query, nights, price, rating — pass query
+            navigate(params.toString() ? `/packages?${params.toString()}` : '/packages');
+            return;
+        }
+        if (service === 'cabs') {
+            // Cabs support query, seats, type — pass query
+            navigate(params.toString() ? `/cabs?${params.toString()}` : '/cabs');
+            return;
+        }
     };
 
     return (

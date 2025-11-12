@@ -1,14 +1,14 @@
 /* === Filename: src/pages/AdminDashboard.jsx === */
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { 
-    UsersIcon, 
-    QuestionMarkCircleIcon, 
-    ArchiveBoxIcon, 
-    ChatBubbleLeftRightIcon, 
-    ShieldCheckIcon, 
-    TrashIcon, 
-    PencilIcon, 
+import {
+    UsersIcon,
+    QuestionMarkCircleIcon,
+    ArchiveBoxIcon,
+    ChatBubbleLeftRightIcon,
+    ShieldCheckIcon,
+    TrashIcon,
+    PencilIcon,
     XMarkIcon,
     PlusIcon,
     ArrowLeftIcon,
@@ -18,6 +18,23 @@ import {
     UserCircleIcon // New icon for profile
 } from '@heroicons/react/24/outline';
 import defaultBanner from '../assets/cta-background.jpg'; // Using this as the admin banner
+import {
+    apiAdminGetUsers,
+    apiAdminUpdateUserStatus,
+    apiAdminGetQueries,
+    apiAdminGetQueryById,
+    apiAdminAddMessage,
+    apiAdminUpdateQueryStatus,
+    apiAdminDeleteReview,
+    apiAdminGetReviews,
+    apiGetPackages,
+    apiAdminCreatePackage,
+    apiAdminUpdatePackage,
+    apiAdminDeletePackage,
+    apiUpdateUserProfile,
+    apiAdminUploadPackageImage,
+    apiAdminUploadPackageImageTemp
+} from '../apiService';
 
 // --- Placeholder Data (Simulating API responses) ---
 const allUsersData = [
@@ -34,9 +51,9 @@ const allPackagesData = [
 ];
 
 const allQueriesData = [
-    { id: 101, subject: 'Refund Request for Booking #C1A2B3', userEmail: 'rajesh.kumar@example.com', status: 'Open', messages: [{ sender: 'User', msg: 'I had to cancel, please refund.'}] },
-    { id: 102, subject: 'Problem with Hotel Profile', userEmail: 'amit.patel@hotel.com', status: 'In Progress', messages: [{ sender: 'User', msg: 'I cannot update my rooms.'}, { sender: 'Admin', msg: 'Looking into it.'}] },
-    { id: 103, subject: 'Question about package', userEmail: 'test@example.com', status: 'Closed', messages: [{ sender: 'User', msg: 'Is flight included?'}, {sender: 'Admin', msg: 'No.'}] },
+    { id: 101, subject: 'Refund Request for Booking #C1A2B3', userEmail: 'rajesh.kumar@example.com', status: 'Open', messages: [{ sender: 'User', msg: 'I had to cancel, please refund.' }] },
+    { id: 102, subject: 'Problem with Hotel Profile', userEmail: 'amit.patel@hotel.com', status: 'In Progress', messages: [{ sender: 'User', msg: 'I cannot update my rooms.' }, { sender: 'Admin', msg: 'Looking into it.' }] },
+    { id: 103, subject: 'Question about package', userEmail: 'test@example.com', status: 'Closed', messages: [{ sender: 'User', msg: 'Is flight included?' }, { sender: 'Admin', msg: 'No.' }] },
 ];
 
 const allReviewsData = [
@@ -51,6 +68,7 @@ const allReviewsData = [
 const AdminDashboard = () => {
     const { user } = useAuth();
     const [activeSection, setActiveSection] = useState('users');
+    const [stats, setStats] = useState({ totalUsers: 0, openQueries: 0, totalPackages: 0 });
 
     const sidebarNavItems = [
         // --- NEW "My Profile" Tab ---
@@ -60,18 +78,36 @@ const AdminDashboard = () => {
         { name: 'Package Management', icon: ArchiveBoxIcon, section: 'packages' },
         { name: 'Review Moderation', icon: ChatBubbleLeftRightIcon, section: 'reviews' },
     ];
-    
+
     // In a real app, you'd have a check here:
     // if (!user || user.role !== 'Admin') {
     //     return <p className="pt-24 text-center">Access Denied.</p>;
     // }
 
-    // Stats for the banner
-    const stats = {
-        totalUsers: allUsersData.length,
-        openQueries: allQueriesData.filter(q => q.status === 'Open').length,
-        totalPackages: allPackagesData.length
-    };
+    // Load stats from backend
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [usersRes, openQueriesRes, packagesRes] = await Promise.all([
+                    apiAdminGetUsers(),
+                    apiAdminGetQueries('Open'),
+                    apiGetPackages()
+                ]);
+                if (!cancelled) {
+                    setStats({
+                        totalUsers: Array.isArray(usersRes) ? usersRes.length : 0,
+                        openQueries: Array.isArray(openQueriesRes) ? openQueriesRes.length : 0,
+                        totalPackages: Array.isArray(packagesRes) ? packagesRes.length : 0
+                    });
+                }
+            } catch (e) {
+                // Silently fail for banner stats; sections handle their own errors
+                console.warn('Failed to load admin banner stats:', e);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -83,7 +119,7 @@ const AdminDashboard = () => {
                 >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 </div>
-                
+
                 {/* Header Content */}
                 <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between pb-6">
@@ -107,7 +143,7 @@ const AdminDashboard = () => {
                                 <p className="text-2xl font-bold text-white">{stats.openQueries}</p>
                                 <p className="text-xs text-gray-200">Open Queries</p>
                             </div>
-                             <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg text-center">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg text-center">
                                 <p className="text-2xl font-bold text-white">{stats.totalPackages}</p>
                                 <p className="text-xs text-gray-200">Packages</p>
                             </div>
@@ -119,7 +155,7 @@ const AdminDashboard = () => {
             {/* --- Main Content --- */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-16 md:-mt-20">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                
+
                     {/* Left Column: Navigation */}
                     <aside className="lg:col-span-1 space-y-8 sticky top-24">
                         <div className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200">
@@ -128,11 +164,10 @@ const AdminDashboard = () => {
                                     <button
                                         key={item.name}
                                         onClick={() => setActiveSection(item.section)}
-                                        className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${
-                                            activeSection === item.section
-                                                ? 'bg-amber-500 text-white shadow-md'
-                                                : 'text-gray-700 hover:bg-gray-100 hover:text-amber-600'
-                                        }`}
+                                        className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-300 ${activeSection === item.section
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-amber-600'
+                                            }`}
                                     >
                                         <item.icon className="h-5 w-5 mr-3" />
                                         <span className="font-medium">{item.name}</span>
@@ -160,22 +195,33 @@ const AdminDashboard = () => {
 const AdminProfile = () => {
     const { user } = useAuth();
     // API: PUT /api/user/profile
-    
+
     const [formData, setFormData] = useState({
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
         email: user?.email || '',
         mobile: user?.mobile || ''
     });
-    
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // SIMULATE: PUT /api/user/profile with formData
-        alert('Admin profile updated (Simulated). In a real app, this would also update the AuthContext.');
+        setSaving(true);
+        setError('');
+        try {
+            await apiUpdateUserProfile(formData);
+            alert('Profile updated successfully.');
+        } catch (err) {
+            setError(err?.message || 'Failed to update profile.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -200,8 +246,9 @@ const AdminProfile = () => {
                     <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
                     <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
                 </div>
-                <button type="submit" className="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600">
-                    Save Changes
+                {error && <p className="text-sm text-red-600">{error}</p>}
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 disabled:opacity-50">
+                    {saving ? 'Saving...' : 'Save Changes'}
                 </button>
             </form>
         </div>
@@ -213,39 +260,63 @@ const AdminProfile = () => {
 const UserManagement = () => {
     // API: GET /api/admin/users?role=...&isVerified=...
     // API: PATCH /api/admin/users/:userId/status
-    
+
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState(''); // '', 'User', 'Business'
     const [statusFilter, setStatusFilter] = useState(''); // '', 'true', 'false'
     const [editingUser, setEditingUser] = useState(null); // User for the modal
-    
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const loadUsers = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const data = await apiAdminGetUsers();
+            setUsers(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError(err?.message || 'Failed to load users.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { loadUsers(); }, []);
+
     const filteredUsers = useMemo(() => {
-        return allUsersData.filter(user => {
-            const matchesSearch = user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  user.email.toLowerCase().includes(searchQuery.toLowerCase());
+        return users.filter(user => {
+            const matchesSearch = user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesRole = !roleFilter || user.role === roleFilter;
             const matchesStatus = !statusFilter || String(user.isVerified) === statusFilter;
             return matchesSearch && matchesRole && matchesStatus;
         });
-    }, [searchQuery, roleFilter, statusFilter]);
+    }, [searchQuery, roleFilter, statusFilter, users]);
 
-    const handleSaveUser = (userId, newStatus) => {
-        // SIMULATE: PATCH /api/admin/users/:userId/status { ...newStatus }
-        alert(`User ${userId} updated (Simulated): ${JSON.stringify(newStatus)}`);
-        setEditingUser(null);
+    const handleSaveUser = async (userId, newStatus) => {
+        try {
+            await apiAdminUpdateUserStatus(userId, newStatus);
+            alert('User updated successfully.');
+            setEditingUser(null);
+            // Refresh users list
+            await loadUsers();
+        } catch (err) {
+            alert(err?.message || 'Failed to update user.');
+        }
     };
 
     return (
         <div className="animate-fade-in bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
             <h2 className="text-2xl font-bold mb-6">User Management</h2>
-            
+
             {/* Filter Controls */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="relative md:col-span-3">
-                    <input 
-                        type="text" 
-                        placeholder="Search by name or email..." 
+                    <input
+                        type="text"
+                        placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:ring-amber-500"
@@ -265,6 +336,7 @@ const UserManagement = () => {
                 </select>
             </div>
 
+            {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -277,7 +349,7 @@ const UserManagement = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredUsers.map(user => (
+                        {(loading ? [] : filteredUsers).map(user => (
                             <tr key={user.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
@@ -299,7 +371,8 @@ const UserManagement = () => {
                     </tbody>
                 </table>
             </div>
-            
+            {loading && <p className="text-sm text-gray-600 mt-2">Loading users...</p>}
+
             {editingUser && <UserEditModal user={editingUser} onClose={() => setEditingUser(null)} onSave={handleSaveUser} />}
         </div>
     );
@@ -324,7 +397,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
             <div className="relative bg-white w-full max-w-lg p-6 rounded-2xl shadow-lg space-y-4">
                 <h3 className="text-xl font-semibold">Manage User: {user.firstName}</h3>
                 <button onClick={onClose} type="button" className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><XMarkIcon className="h-6 w-6" /></button>
-                
+
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -363,21 +436,55 @@ const SupportQueries = () => {
     const [statusFilter, setStatusFilter] = useState('Open');
     const [selectedQuery, setSelectedQuery] = useState(null);
     const [reply, setReply] = useState('');
+    const [queries, setQueries] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const loadQueries = async (status) => {
+        setLoading(true);
+        setError('');
+        try {
+            const data = await apiAdminGetQueries(status === 'All' || status === '' ? undefined : status);
+            setQueries(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError(err?.message || 'Failed to load queries.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { loadQueries(statusFilter); }, [statusFilter]);
 
     const filteredQueries = useMemo(() => {
-        if (statusFilter === '') return allQueriesData;
-        return allQueriesData.filter(q => q.status === statusFilter);
-    }, [statusFilter]);
-    
-    const handleSelectQuery = (query) => setSelectedQuery(query);
-    const handleReply = () => {
-        alert(`Reply sent: "${reply}"`);
-        setSelectedQuery(prev => ({...prev, status: 'In Progress', messages: [...prev.messages, { sender: 'Admin', msg: reply}]}));
-        setReply('');
+        return queries;
+    }, [queries]);
+
+    const handleSelectQuery = async (query) => {
+        try {
+            const details = await apiAdminGetQueryById(query.id);
+            const messages = Array.isArray(details.messages) ? details.messages.map(m => ({ sender: m.senderRole === 'Admin' ? 'Admin' : 'User', msg: m.message })) : [];
+            const combined = { ...query, ...details.query, messages };
+            setSelectedQuery(combined);
+        } catch (err) {
+            alert(err?.message || 'Failed to load query details.');
+        }
     };
-    const handleCloseTicket = () => {
-        alert(`Ticket ${selectedQuery.id} closed.`);
-        setSelectedQuery(prev => ({...prev, status: 'Closed'}));
+    const handleReply = async () => {
+        try {
+            await apiAdminAddMessage(selectedQuery.id, reply);
+            setSelectedQuery(prev => ({ ...prev, status: 'In Progress', messages: [...prev.messages, { sender: 'Admin', msg: reply }] }));
+            setReply('');
+        } catch (err) {
+            alert(err?.message || 'Failed to send reply.');
+        }
+    };
+    const handleCloseTicket = async () => {
+        try {
+            await apiAdminUpdateQueryStatus(selectedQuery.id, 'Closed');
+            setSelectedQuery(prev => ({ ...prev, status: 'Closed' }));
+        } catch (err) {
+            alert(err?.message || 'Failed to close ticket.');
+        }
     };
 
     if (selectedQuery) {
@@ -387,11 +494,11 @@ const SupportQueries = () => {
     return (
         <div className="animate-fade-in bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
             <h2 className="text-2xl font-bold mb-6">Support Queries</h2>
-            
+
             <div className="flex space-x-2 mb-4">
                 {['Open', 'In Progress', 'Closed', 'All'].map(status => (
-                    <button 
-                        key={status} 
+                    <button
+                        key={status}
                         onClick={() => setStatusFilter(status === 'All' ? '' : status)}
                         className={`px-4 py-2 rounded-lg font-medium text-sm ${statusFilter === status || (status === 'All' && statusFilter === '') ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border'}`}
                     >
@@ -400,6 +507,7 @@ const SupportQueries = () => {
                 ))}
             </div>
 
+            {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <div className="space-y-2">
                 {filteredQueries.map(query => (
                     <div key={query.id} onClick={() => handleSelectQuery(query)} className="p-4 border-b hover:bg-gray-50 cursor-pointer">
@@ -410,6 +518,7 @@ const SupportQueries = () => {
                         <p className="text-sm text-gray-500">From: {query.userEmail}</p>
                     </div>
                 ))}
+                {loading && <p className="text-sm text-gray-600">Loading queries...</p>}
             </div>
         </div>
     );
@@ -448,12 +557,67 @@ const QueryDetail = ({ query, onReply, onCloseTicket, setReply, reply, onBack })
 const PackageManagement = () => {
     const [showForm, setShowForm] = useState(false);
     const [currentPackage, setCurrentPackage] = useState(null);
+    const [packages, setPackages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const loadPackages = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const data = await apiGetPackages();
+            setPackages(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError(err?.message || 'Failed to load packages.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { loadPackages(); }, []);
+
     const handleEdit = (pkg) => { setCurrentPackage(pkg); setShowForm(true); };
-    const handleDelete = (pkgId) => { if (window.confirm('...')) { alert(`Package ${pkgId} deleted (Simulated)`); }};
-    const handleSave = (formData) => {
-        if (currentPackage) { alert(`Package ${currentPackage.id} updated (Simulated)`); } 
-        else { alert(`New package "${formData.name}" created (Simulated)`); }
-        setShowForm(false); setCurrentPackage(null);
+    const handleDelete = async (pkgId) => {
+        if (window.confirm('Are you sure you want to delete this package?')) {
+            try {
+                await apiAdminDeletePackage(pkgId);
+                alert('Package deleted successfully.');
+                setPackages(prev => prev.filter(p => p.id !== pkgId));
+            } catch (err) {
+                alert(err?.message || 'Failed to delete package.');
+            }
+        }
+    };
+    const handleSave = async (formData) => {
+        try {
+            if (currentPackage) {
+                await apiAdminUpdatePackage(currentPackage.id, {
+                    name: formData.name,
+                    nights: Number(formData.nights),
+                    price: Number(formData.price),
+                    description: formData.description,
+                    image_url: formData.image_url,
+                    places: formData.places.split(',').map(s => s.trim()).filter(Boolean),
+                    included: formData.included.split(',').map(s => s.trim()).filter(Boolean)
+                });
+                alert('Package updated successfully.');
+            } else {
+                await apiAdminCreatePackage({
+                    name: formData.name,
+                    nights: Number(formData.nights),
+                    price: Number(formData.price),
+                    description: formData.description,
+                    image_url: formData.image_url,
+                    places: formData.places.split(',').map(s => s.trim()).filter(Boolean),
+                    included: formData.included.split(',').map(s => s.trim()).filter(Boolean)
+                });
+                alert('Package created successfully.');
+            }
+            setShowForm(false); setCurrentPackage(null);
+            await loadPackages();
+        } catch (err) {
+            alert(err?.message || 'Failed to save package.');
+        }
     };
 
     if (showForm) {
@@ -467,8 +631,9 @@ const PackageManagement = () => {
                     <PlusIcon className="h-5 w-5" /> Add New
                 </button>
             </div>
+            {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <div className="space-y-2">
-                {allPackagesData.map(pkg => (
+                {(loading ? [] : packages).map(pkg => (
                     <div key={pkg.id} className="p-4 border-b flex justify-between items-center">
                         <div>
                             <p className="font-semibold">{pkg.name} ({pkg.nights} Nights)</p>
@@ -480,6 +645,7 @@ const PackageManagement = () => {
                         </div>
                     </div>
                 ))}
+                {loading && <p className="text-sm text-gray-600">Loading packages...</p>}
             </div>
         </div>
     );
@@ -490,10 +656,70 @@ const PackageForm = ({ pkg, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
         name: pkg?.name || '', nights: pkg?.nights || '', price: pkg?.price || '',
         description: pkg?.description || '', image_url: pkg?.image_url || '',
-        places: pkg?.places?.join(', ') || '', included: pkg?.included?.join(', ') || ''
+        places: Array.isArray(pkg?.places) ? pkg.places.join(', ') : '', included: Array.isArray(pkg?.included) ? pkg.included.join(', ') : ''
     });
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+
+    const PackageImageUploader = ({ packageId, currentUrl, onUploaded }) => {
+        const [file, setFile] = useState(null);
+        const [uploading, setUploading] = useState(false);
+        const [error, setError] = useState('');
+
+        const handleFileChange = (e) => {
+            const f = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+            setFile(f);
+            setError('');
+        };
+
+        const handleUpload = async () => {
+            if (!file) {
+                setError('Please select an image file.');
+                return;
+            }
+            setUploading(true);
+            setError('');
+            try {
+                let data;
+                if (packageId) {
+                    data = await apiAdminUploadPackageImage(packageId, file);
+                    const url = data?.url || data?.package?.image_url;
+                    if (!url) throw new Error('Upload succeeded but no URL returned.');
+                    onUploaded(url);
+                } else {
+                    data = await apiAdminUploadPackageImageTemp(file);
+                    const url = data?.url;
+                    if (!url) throw new Error('Upload succeeded but no URL returned.');
+                    onUploaded(url);
+                }
+            } catch (e) {
+                setError(e.message || 'Upload failed.');
+            } finally {
+                setUploading(false);
+            }
+        };
+
+        return (
+            <div>
+                {currentUrl && (
+                    <div className="mb-2">
+                        <img src={currentUrl || defaultBanner} alt="Package" className="w-full h-32 object-cover rounded-md border" />
+                        <p className="text-xs text-gray-500 mt-1">Current: {currentUrl}</p>
+                    </div>
+                )}
+                <div className="flex items-center gap-2">
+                    <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full rounded-md border-gray-300 shadow-sm" />
+                    <button type="button" onClick={handleUpload} disabled={uploading || !file} className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50">
+                        {uploading ? 'Uploading...' : 'Upload'}
+                    </button>
+                </div>
+                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                {!currentUrl && (
+                    <p className="text-xs text-gray-500 mt-1">Tip: After uploading, the field auto-fills.</p>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="animate-fade-in">
@@ -506,7 +732,15 @@ const PackageForm = ({ pkg, onSave, onCancel }) => {
                     <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Price (₹)" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required />
                 </div>
                 <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" rows="3" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-                <input type="text" name="image_url" value={formData.image_url} onChange={handleChange} placeholder="Image URL" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Package Image</label>
+                    <PackageImageUploader
+                        packageId={pkg?.id || null}
+                        currentUrl={formData.image_url}
+                        onUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                    />
+                    <input type="text" name="image_url" value={formData.image_url} onChange={handleChange} placeholder={pkg ? 'Or paste URL (https://... or /uploads/package/...)' : 'Optionally paste URL (you can upload too)'} className="mt-2 block w-full rounded-md border-gray-300 shadow-sm" />
+                </div>
                 <input type="text" name="places" value={formData.places} onChange={handleChange} placeholder="Places (comma-separated)" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
                 <input type="text" name="included" value={formData.included} onChange={handleChange} placeholder="What's Included (comma-separated)" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
                 <button type="submit" className="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600">Save Package</button>
@@ -519,30 +753,57 @@ const PackageForm = ({ pkg, onSave, onCancel }) => {
 const ReviewManagement = () => {
     // API: DELETE /api/admin/reviews/:reviewId
     const [searchQuery, setSearchQuery] = useState('');
-    
+    const [reviews, setReviews] = useState([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await apiAdminGetReviews();
+                if (!cancelled && Array.isArray(res)) {
+                    // Map backend fields to UI expectations
+                    const mapped = res.map(r => ({
+                        id: r.id,
+                        user: `${r.userFirstName ?? ''}${r.userLastName ? ' ' + r.userLastName : ''}`.trim() || 'Unknown',
+                        rating: r.rating,
+                        comment: r.comment ?? ''
+                    }));
+                    setReviews(mapped);
+                }
+            } catch (err) {
+                console.warn('Failed to load reviews:', err);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
     const filteredReviews = useMemo(() => {
-        return allReviewsData.filter(review => 
+        return reviews.filter(review =>
             review.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
             review.comment.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [searchQuery]);
-    
-    const handleDelete = (reviewId) => {
-        // SIMULATE: DELETE /api/admin/reviews/:reviewId
+    }, [searchQuery, reviews]);
+
+    const handleDelete = async (reviewId) => {
         if (window.confirm('Are you sure you want to delete this review?')) {
-            alert(`Review ${reviewId} deleted (Simulated)`);
-            // Here you would refetch or update state
+            try {
+                await apiAdminDeleteReview(reviewId);
+                setReviews(prev => prev.filter(r => r.id !== reviewId));
+                alert('Review deleted successfully.');
+            } catch (err) {
+                alert(err?.message || 'Failed to delete review.');
+            }
         }
     };
-    
+
     return (
         <div className="animate-fade-in bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
             <h2 className="text-2xl font-bold mb-6">Review Moderation</h2>
-            
+
             <div className="relative mb-6">
-                <input 
-                    type="text" 
-                    placeholder="Search by user or comment..." 
+                <input
+                    type="text"
+                    placeholder="Search by user or comment..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:ring-amber-500"
@@ -554,7 +815,7 @@ const ReviewManagement = () => {
                 {filteredReviews.map(review => (
                     <div key={review.id} className="p-4 border-b flex justify-between items-start">
                         <div className="pr-4">
-                            <p className="font-semibold">{review.user} 
+                            <p className="font-semibold">{review.user}
                                 <span className={`ml-2 ${review.rating < 3 ? 'text-red-500' : 'text-green-500'}`}>
                                     ({review.rating} ★)
                                 </span>

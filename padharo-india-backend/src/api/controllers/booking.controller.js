@@ -33,7 +33,7 @@ const calculateBookingPrice = (service_type, service, details) => {
             const priceByKm = (service.base_rate_km || 0) * (distance_km || 0);
             const totalPrice = priceByHour + priceByKm;
             if (totalPrice <= 0) {
-                 throw new Error('Cab booking must include hours or distance.');
+                throw new Error('Cab booking must include hours or distance.');
             }
             return totalPrice;
         }
@@ -58,141 +58,142 @@ const calculateBookingPrice = (service_type, service, details) => {
  * Controller to create a new booking. Requires authentication.
  */
 export const createBooking = async (req, res, next) => {
-  try {
-    const userId = req.user.id; // Get user ID from authenticated token payload
-
-    const {
-        service_type, service_id, room_id, start_date, end_date,
-        pickup_location, dropoff_location, num_guests, num_hours, distance_km,
-        total_price // This is from the client, we will VALIDATE it.
-    } = req.body;
-    
-    // --- 1. Validate Service Existence & Get Details ---
-    let service;
-    switch (service_type) {
-        case 'Cab':
-            service = await Cab.findById(service_id);
-            if (!service || !service.is_available) {
-                return res.status(404).json({ message: 'Cab not found or is currently unavailable.' });
-            }
-            break;
-        case 'Hotel':
-            if (!room_id) {
-                return res.status(400).json({ message: 'Room ID is required for hotel bookings.' });
-            }
-            service = await Room.findById(room_id);
-            if (!service || service.hotel_id !== service_id) {
-                return res.status(404).json({ message: 'Room not found or does not belong to this hotel.' });
-            }
-            break;
-        case 'Guide':
-            service = await Guide.findById(service_id);
-            if (!service || !service.is_verified) {
-                return res.status(404).json({ message: 'Guide not found or is not verified.' });
-            }
-            break;
-        case 'Package':
-            service = await Package.findById(service_id);
-            if (!service) {
-                return res.status(404).json({ message: 'Package not found.' });
-            }
-            break;
-        default:
-            return res.status(400).json({ message: 'Invalid service type.' });
-    }
-
-    // --- 2. Server-Side Price Calculation & Validation ---
-    let calculatedPrice;
     try {
-        calculatedPrice = calculateBookingPrice(service_type, service, {
-            start_date, end_date, num_hours, distance_km
-        });
+        const userId = req.user.id; // Get user ID from authenticated token payload
+
+        const {
+            service_type, service_id, room_id, start_date, end_date,
+            pickup_location, dropoff_location, num_guests, num_hours, distance_km,
+            total_price // This is from the client, we will VALIDATE it.
+        } = req.body;
+
+        // --- 1. Validate Service Existence & Get Details ---
+        let service;
+        switch (service_type) {
+            case 'Cab':
+                service = await Cab.findById(service_id);
+                if (!service || !service.is_available) {
+                    return res.status(404).json({ message: 'Cab not found or is currently unavailable.' });
+                }
+                break;
+            case 'Hotel':
+                if (!room_id) {
+                    return res.status(400).json({ message: 'Room ID is required for hotel bookings.' });
+                }
+                service = await Room.findById(room_id);
+                if (!service || service.hotel_id !== service_id) {
+                    return res.status(404).json({ message: 'Room not found or does not belong to this hotel.' });
+                }
+                break;
+            case 'Guide':
+                service = await Guide.findById(service_id);
+                // Allow booking regardless of verification status; only ensure the guide exists.
+                if (!service) {
+                    return res.status(404).json({ message: 'Guide not found.' });
+                }
+                break;
+            case 'Package':
+                service = await Package.findById(service_id);
+                if (!service) {
+                    return res.status(404).json({ message: 'Package not found.' });
+                }
+                break;
+            default:
+                return res.status(400).json({ message: 'Invalid service type.' });
+        }
+
+        // --- 2. Server-Side Price Calculation & Validation ---
+        let calculatedPrice;
+        try {
+            calculatedPrice = calculateBookingPrice(service_type, service, {
+                start_date, end_date, num_hours, distance_km
+            });
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
+
+        // Validate client price against server price (allowing for small float differences)
+        if (Math.abs(calculatedPrice - total_price) > 0.01) {
+            console.warn(`Price mismatch for user ${userId}. Client: ${total_price}, Server: ${calculatedPrice}`);
+            return res.status(400).json({
+                message: `Price mismatch. The calculated price is ${calculatedPrice.toFixed(2)}. Please refresh and try again.`
+            });
+        }
+
+        // --- 3. Check Availability (Scheduling Conflict) ---
+        const isAvailable = await Booking.checkAvailability(
+            service_type, service_id, room_id, start_date, end_date
+        );
+
+        if (!isAvailable) {
+            return res.status(409).json({ message: 'This service is not available for the selected dates/times. It has already been booked.' });
+        }
+
+        // --- 4. Create Booking ---
+        const bookingData = {
+            user_id: userId,
+            service_type,
+            service_id,
+            room_id,
+            start_date,
+            end_date,
+            pickup_location,
+            dropoff_location,
+            num_guests,
+            num_hours,
+            distance_km,
+            total_price: calculatedPrice // Use the server-calculated price
+            // status defaults to 'Confirmed' in model
+        };
+
+        const newBookingId = await Booking.create(bookingData);
+        res.status(201).json({ message: 'Booking created successfully', bookingId: newBookingId });
+
     } catch (error) {
-        return res.status(400).json({ message: error.message });
+        console.error("Error in createBooking controller:", error);
+        next(error);
     }
-
-    // Validate client price against server price (allowing for small float differences)
-    if (Math.abs(calculatedPrice - total_price) > 0.01) {
-        console.warn(`Price mismatch for user ${userId}. Client: ${total_price}, Server: ${calculatedPrice}`);
-        return res.status(400).json({ 
-            message: `Price mismatch. The calculated price is ${calculatedPrice.toFixed(2)}. Please refresh and try again.` 
-        });
-    }
-
-    // --- 3. Check Availability (Scheduling Conflict) ---
-    const isAvailable = await Booking.checkAvailability(
-        service_type, service_id, room_id, start_date, end_date
-    );
-
-    if (!isAvailable) {
-        return res.status(409).json({ message: 'This service is not available for the selected dates/times. It has already been booked.' });
-    }
-
-    // --- 4. Create Booking ---
-    const bookingData = {
-        user_id: userId,
-        service_type,
-        service_id,
-        room_id,
-        start_date,
-        end_date,
-        pickup_location,
-        dropoff_location,
-        num_guests,
-        num_hours,
-        distance_km,
-        total_price: calculatedPrice // Use the server-calculated price
-        // status defaults to 'Confirmed' in model
-    };
-
-    const newBookingId = await Booking.create(bookingData);
-    res.status(201).json({ message: 'Booking created successfully', bookingId: newBookingId });
-
-  } catch (error) {
-    console.error("Error in createBooking controller:", error);
-    next(error);
-  }
 };
 
 /**
  * Controller to get bookings for the currently authenticated user.
  */
 export const getUserBookings = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const bookings = await Booking.findByUserId(userId);
-    res.status(200).json(bookings);
-  } catch (error) {
-    console.error("Error in getUserBookings controller:", error);
-    next(error);
-  }
+    try {
+        const userId = req.user.id;
+        const bookings = await Booking.findByUserId(userId);
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error("Error in getUserBookings controller:", error);
+        next(error);
+    }
 };
 
 /**
  * Controller to get a specific booking by ID for the authenticated user.
  */
 export const getBookingById = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { id } = req.params;
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
 
-    const booking = await Booking.findById(id);
+        const booking = await Booking.findById(id);
 
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Security Check: Ensure the logged-in user owns this booking
+        if (booking.user_id !== userId) {
+            // Optional: Allow Admins or relevant Business owners to see bookings too
+            return res.status(403).json({ message: 'Forbidden: You do not have permission to view this booking.' });
+        }
+
+        res.status(200).json(booking);
+    } catch (error) {
+        console.error(`Error in getBookingById controller (id: ${req.params.id}):`, error);
+        next(error);
     }
-
-    // Security Check: Ensure the logged-in user owns this booking
-    if (booking.user_id !== userId) {
-        // Optional: Allow Admins or relevant Business owners to see bookings too
-        return res.status(403).json({ message: 'Forbidden: You do not have permission to view this booking.' });
-    }
-
-    res.status(200).json(booking);
-  } catch (error) {
-    console.error(`Error in getBookingById controller (id: ${req.params.id}):`, error);
-    next(error);
-  }
 };
 
 /**
@@ -205,14 +206,14 @@ export const cancelBooking = async (req, res, next) => {
 
         // First, check if the booking exists and belongs to the user
         const booking = await Booking.findById(id);
-        
+
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found.' });
         }
         if (booking.user_id !== userId) {
             return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
         }
-        
+
         // Check if booking is already cancelled or completed
         if (booking.status === 'Cancelled' || booking.status === 'Completed') {
             return res.status(400).json({ message: `Booking is already ${booking.status} and cannot be cancelled.` });

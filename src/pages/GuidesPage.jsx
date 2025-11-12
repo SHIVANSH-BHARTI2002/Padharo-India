@@ -1,53 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import GuideSearchBox from '../components/search box/GuideSearchBox';
 import GuideCard from '../components/cards/GuideProfileCard';
+import { apiGetGuides } from '../apiService';
 
 import heroImage from '../assets/map.jpg';
 import man from '../assets/man.png';
-import women from '../assets/women.png';
 
 const GuidesPage = () => {
-    const guides = [
-        {
-            id: 1,
-            name: 'Rajesh Kumar',
-            image: man,
-            location: 'Jaipur, Rajasthan',
-            rating: 4.9,
-            description: 'Passionate storyteller with deep expertise in Rajasthani culture. I bring ancient palaces to life with engaging narratives.',
-            languages: ['Hindi', 'English', 'German'],
-            specialties: ['History', 'Culture', 'Cuisine'],
-            pricePerHour: 350,
-            experience: 8,
-            toursCompleted: 340,
-        },
-        {
-            id: 2,
-            name: 'Priya Sharma',
-            image: women,
-            location: 'Agra, Uttar Pradesh',
-            rating: 4.8,
-            description: 'An avid photographer and history enthusiast, offering unique tours of Agra\'s iconic landmarks. Let\'s capture the beauty of the Taj Mahal!',
-            languages: ['Hindi', 'English', 'Spanish'],
-            specialties: ['Photography', 'Mughal History'],
-            pricePerHour: 400,
-            experience: 6,
-            toursCompleted: 250,
-        },
-        {
-            id: 3,
-            name: 'Amit Patel',
-            image: man,
-            location: 'Varanasi, Uttar Pradesh',
-            rating: 4.9,
-            description: 'Born and raised in Varanasi, I provide immersive spiritual experiences. Discover the ancient traditions and rituals of this holy city.',
-            languages: ['Hindi', 'English', 'Japanese'],
-            specialties: ['Spiritual', 'Boating', 'Ghats'],
-            pricePerHour: 300,
-            experience: 10,
-            toursCompleted: 420,
+    const [guides, setGuides] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialFilters = {
+        query: searchParams.get('query') || '',
+        language: searchParams.get('language') || '',
+        specialty: searchParams.get('specialty') || ''
+    };
+    const [filters, setFilters] = useState(initialFilters);
+
+    const fetchGuides = async (activeFilters = {}) => {
+        try {
+            setLoading(true);
+            setError('');
+            const data = await apiGetGuides(activeFilters);
+            const mapped = (data || []).map(g => ({
+                id: g.id,
+                name: `${g.guideFirstName || ''} ${g.guideLastName || ''}`.trim() || 'Unknown Guide',
+                image: g.image_url || man,
+                location: g.location || 'Unknown',
+                rating: g.averageRating || 4.7,
+                description: g.description_short || '',
+                languages: g.languages || [],
+                specialties: g.specialties || [],
+                pricePerHour: g.price_per_hour || 0,
+                experience: g.experience_years || 0,
+                toursCompleted: g.tours_completed || 0,
+            }));
+            setGuides(mapped);
+        } catch (e) {
+            setError(e.message || 'Failed to load guides');
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        // Sync filters -> URL and fetch
+        const nextParams = new URLSearchParams();
+        if (filters.query) nextParams.set('query', filters.query);
+        if (filters.language) nextParams.set('language', filters.language);
+        if (filters.specialty) nextParams.set('specialty', filters.specialty);
+        setSearchParams(nextParams);
+        fetchGuides(filters);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters.query, filters.language, filters.specialty]);
+
+    const handleSearch = (newFilters) => {
+        setFilters(newFilters);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -69,7 +80,12 @@ const GuidesPage = () => {
                             Discover India's wonders with our expert, friendly local guides.
                         </p>
                     </div>
-                    <GuideSearchBox />
+                    <GuideSearchBox
+                        onSearch={handleSearch}
+                        initialQuery={filters.query}
+                        initialLanguage={filters.language}
+                        initialSpecialty={filters.specialty}
+                    />
                 </div>
             </header>
 
@@ -80,28 +96,45 @@ const GuidesPage = () => {
                         <h2 className="text-3xl font-bold text-gray-900 mb-2">
                             Available Guides
                         </h2>
-                        <p className="text-gray-600">
-                            Showing {guides.length} guides matching your criteria
-                        </p>
+                        {loading ? (
+                            <p className="text-gray-600">Loading guides...</p>
+                        ) : (
+                            <p className="text-gray-600">Showing {guides.length} guides matching your criteria</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Guides List */}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6">
+                        {error}
+                    </div>
+                )}
+
                 <div className="space-y-8">
-                    {guides.map((guide, index) => (
-                        <div
-                            key={index}
-                            className="animate-fade-in-up"
-                            style={{ animationDelay: `${index * 150}ms` }}
-                        >
-                            <GuideCard guide={guide} />
-                        </div>
-                    ))}
+                    {guides.length > 0 ? (
+                        guides.map((guide, index) => (
+                            <div
+                                key={guide.id || index}
+                                className="animate-fade-in-up"
+                                style={{ animationDelay: `${index * 150}ms` }}
+                            >
+                                <GuideCard guide={guide} />
+                            </div>
+                        ))
+                    ) : (
+                        !loading && (
+                            <div className="text-center py-16">
+                                <h3 className="text-2xl font-semibold text-gray-700">No Guides Found</h3>
+                                <p className="text-gray-500 mt-2">Try adjusting your search filters.</p>
+                            </div>
+                        )
+                    )}
                 </div>
 
                 <div className="text-center mt-12">
-                    <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-3 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        Load More Guides
+                    <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-3 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" onClick={() => fetchGuides(filters)}>
+                        Refresh Guides
                     </button>
                 </div>
             </main>

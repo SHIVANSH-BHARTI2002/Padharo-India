@@ -59,14 +59,14 @@ const GuideCard = ({ guide }) => {
                     {/* Stats */}
                     <div className="flex items-center space-x-6 border-t border-b border-gray-100 py-3 mb-4">
                         <div className='flex items-center text-sm text-gray-700'>
-                            <BriefcaseIcon className="h-5 w-5 mr-2 text-gray-400"/>
+                            <BriefcaseIcon className="h-5 w-5 mr-2 text-gray-400" />
                             <div>
                                 <span className="font-bold">{experience}</span> Years
                                 <span className="hidden sm:inline"> of Experience</span>
                             </div>
                         </div>
-                         <div className='flex items-center text-sm text-gray-700'>
-                            <FlagIcon className="h-5 w-5 mr-2 text-gray-400"/>
+                        <div className='flex items-center text-sm text-gray-700'>
+                            <FlagIcon className="h-5 w-5 mr-2 text-gray-400" />
                             <div>
                                 <span className="font-bold">{toursCompleted}+</span> Tours
                                 <span className="hidden sm:inline"> Completed</span>
@@ -78,7 +78,7 @@ const GuideCard = ({ guide }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <div>
                             <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
-                                <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2 text-blue-500"/>
+                                <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2 text-blue-500" />
                                 Languages
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -87,9 +87,9 @@ const GuideCard = ({ guide }) => {
                                 ))}
                             </div>
                         </div>
-                         <div>
+                        <div>
                             <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
-                                <CheckCircleIcon className="h-4 w-4 mr-2 text-green-500"/>
+                                <CheckCircleIcon className="h-4 w-4 mr-2 text-green-500" />
                                 Specialties
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -114,9 +114,9 @@ const GuideCard = ({ guide }) => {
                             <Link to={`/guides/${id}`} className="px-6 py-2 border-2 border-amber-500 text-amber-500 rounded-full font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300">
                                 View Profile
                             </Link>
-                            <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-2 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <Link to={`/guides/${id}`} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-2 rounded-full font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                                 Book Now
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

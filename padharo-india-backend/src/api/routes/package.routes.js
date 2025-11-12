@@ -1,12 +1,18 @@
 /* === Filename: padharo-india-backend/src/api/routes/package.routes.js === */
 import express from 'express';
 import { query, param, body, validationResult } from 'express-validator';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import {
     getAllPackages,
     getPackageByName,
     createPackage,
     updatePackage, // <-- Added controller for PUT
-    deletePackage  // <-- Added controller for DELETE
+    deletePackage,  // <-- Added controller for DELETE
+    uploadPackageImage,
+    uploadPackageImageTemp
 } from '../controllers/package.controller.js'; //
 // Import Middleware
 import { authenticateToken, checkRole } from '../middleware/auth.middleware.js'; // Removed checkBusinessType as Admin role is sufficient
@@ -26,6 +32,28 @@ const handleValidationErrors = (req, res, next) => {
     }
     next();
 };
+
+// --- Multer setup for Package image uploads ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const packageUploadDir = path.resolve(__dirname, '../../uploads/package');
+try { fs.mkdirSync(packageUploadDir, { recursive: true }); } catch (e) { /* noop */ }
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, packageUploadDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '');
+        const unique = Date.now();
+        cb(null, `${base}-${unique}${ext}`);
+    }
+});
+const fileFilter = (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) return cb(new Error('Only image files are allowed'));
+    cb(null, true);
+};
+const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // --- Public Routes ---
 
@@ -72,7 +100,14 @@ router.post(
         body('included').optional().isArray().withMessage('Included items must be an array of strings.'), //
         body('included.*').optional().isString().trim().notEmpty(), //
         body('price').isDecimal({ decimal_digits: '0,2' }).withMessage('Price must be a valid decimal number.').toFloat(), //
-        body('image_url').optional({ checkFalsy: true }).isURL().withMessage('Image URL must be valid.'), //
+        // Accept full URLs (http/https) or relative uploads path like /uploads/... for main image
+        body('image_url').optional({ checkFalsy: true }).custom((value) => {
+            if (typeof value !== 'string') return false;
+            const v = value.trim();
+            if (!v) return false;
+            if (v.startsWith('/uploads/')) return true;
+            try { new URL(v); return true; } catch { return false; }
+        }).withMessage('Image must be a valid URL or /uploads/... path.'), //
         // Add validation for itinerary, galleryUrls if added later
     ],
     handleValidationErrors,
@@ -94,7 +129,13 @@ router.put(
         body('included').optional().isArray(),
         body('included.*').optional().isString().trim().notEmpty(),
         body('price').optional().isDecimal({ decimal_digits: '0,2' }).toFloat(),
-        body('image_url').optional({ checkFalsy: true }).isURL(),
+        body('image_url').optional({ checkFalsy: true }).custom((value) => {
+            if (typeof value !== 'string') return false;
+            const v = value.trim();
+            if (!v) return false;
+            if (v.startsWith('/uploads/')) return true;
+            try { new URL(v); return true; } catch { return false; }
+        }),
         // Add validation for itinerary, galleryUrls if added later
     ],
     handleValidationErrors,
@@ -111,6 +152,28 @@ router.delete(
     ],
     handleValidationErrors,
     deletePackage //
+);
+
+// --- Image Upload Routes (Admin) ---
+
+// POST /api/packages/:id/upload-image - Upload and set package image
+router.post(
+    '/:id/upload-image',
+    authenticateToken,
+    checkRole(['Admin']),
+    [param('id').isInt({ min: 1 }).withMessage('Package ID must be a positive integer.')],
+    handleValidationErrors,
+    upload.single('image'),
+    uploadPackageImage
+);
+
+// POST /api/packages/upload-image - Upload image for create flow and return URL
+router.post(
+    '/upload-image',
+    authenticateToken,
+    checkRole(['Admin']),
+    upload.single('image'),
+    uploadPackageImageTemp
 );
 
 export default router;

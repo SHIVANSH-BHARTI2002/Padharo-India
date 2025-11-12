@@ -24,9 +24,9 @@ class User {
     return rows[0];
   }
 
-   static async findById(id) {
+  static async findById(id) {
     // Selects only non-sensitive fields suitable for profile display
-    const sql = 'SELECT id, firstName, lastName, email, mobile, role, businessType, isVerified, createdAt FROM users WHERE id = ?';
+    const sql = 'SELECT id, firstName, lastName, email, mobile, role, businessType, isVerified, createdAt, profileImageUrl FROM users WHERE id = ?';
     const [rows] = await pool.execute(sql, [id]);
     return rows[0];
   }
@@ -44,39 +44,39 @@ class User {
    */
   static async updateUser(userId, updateData) {
     if (Object.keys(updateData).length === 0) {
-        return false; // Nothing to update
+      return false; // Nothing to update
     }
 
     // Dynamically build SET part of the query
     const setClauses = [];
     const params = [];
     for (const key in updateData) {
-        // Only allow specific fields to be updated via this method
-        if (['firstName', 'lastName', 'email', 'mobile'/*, 'isVerified'*/].includes(key)) {
-             setClauses.push(`${key} = ?`);
-             params.push(updateData[key]);
-        }
+      // Only allow specific fields to be updated via this method
+      if (['firstName', 'lastName', 'email', 'mobile', 'profileImageUrl'/*, 'isVerified'*/].includes(key)) {
+        setClauses.push(`${key} = ?`);
+        params.push(updateData[key]);
+      }
     }
 
     if (setClauses.length === 0) {
-        console.warn("UpdateUser called with no valid fields to update:", updateData);
-        return false;
+      console.warn("UpdateUser called with no valid fields to update:", updateData);
+      return false;
     }
 
     const sql = `UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`;
     params.push(userId); // Add userId for the WHERE clause
 
     try {
-        const [result] = await pool.execute(sql, params);
-        return result.affectedRows > 0;
+      const [result] = await pool.execute(sql, params);
+      return result.affectedRows > 0;
     } catch (error) {
-        console.error("Error updating user in DB:", error);
-         // Handle potential duplicate entry errors for unique fields
-        if (error.code === 'ER_DUP_ENTRY') {
-            if (error.message.includes('email')) throw new Error('Email already exists.'); // Throw specific error
-            if (error.message.includes('mobile')) throw new Error('Mobile number already exists.'); // Throw specific error
-        }
-        throw error; // Re-throw other errors
+      console.error("Error updating user in DB:", error);
+      // Handle potential duplicate entry errors for unique fields
+      if (error.code === 'ER_DUP_ENTRY') {
+        if (error.message.includes('email')) throw new Error('Email already exists.'); // Throw specific error
+        if (error.message.includes('mobile')) throw new Error('Mobile number already exists.'); // Throw specific error
+      }
+      throw error; // Re-throw other errors
     }
   }
 
@@ -88,27 +88,27 @@ class User {
    * @returns {Promise<Array>} - Array of non-sensitive user objects.
    */
   static async findAllUsersWithStatus(filters = {}) {
-      let sql = 'SELECT id, firstName, lastName, email, mobile, role, businessType, isVerified, createdAt FROM users';
-      const params = [];
-      const whereClauses = [];
+    let sql = 'SELECT id, firstName, lastName, email, mobile, role, businessType, isVerified, createdAt, profileImageUrl FROM users';
+    const params = [];
+    const whereClauses = [];
 
-      if (filters.role) {
-          whereClauses.push('role = ?');
-          params.push(filters.role);
-      }
-      if (filters.isVerified !== undefined) {
-          whereClauses.push('isVerified = ?');
-          params.push(filters.isVerified);
-      }
+    if (filters.role) {
+      whereClauses.push('role = ?');
+      params.push(filters.role);
+    }
+    if (filters.isVerified !== undefined) {
+      whereClauses.push('isVerified = ?');
+      params.push(filters.isVerified);
+    }
 
-      if (whereClauses.length > 0) {
-          sql += ' WHERE ' + whereClauses.join(' AND ');
-      }
-      
-      sql += ' ORDER BY createdAt DESC';
-      
-      const [rows] = await pool.execute(sql, params);
-      return rows;
+    if (whereClauses.length > 0) {
+      sql += ' WHERE ' + whereClauses.join(' AND ');
+    }
+
+    sql += ' ORDER BY createdAt DESC';
+
+    const [rows] = await pool.execute(sql, params);
+    return rows;
   }
 
   /**
@@ -118,26 +118,26 @@ class User {
    * @returns {Promise<boolean>} - True if successful.
    */
   static async updateUserStatus(userId, statusData) {
-      const allowedFields = ['isVerified', 'role', 'businessType'];
-      const setClauses = [];
-      const params = [];
+    const allowedFields = ['isVerified', 'role', 'businessType'];
+    const setClauses = [];
+    const params = [];
 
-      for (const key in statusData) {
-          if (allowedFields.includes(key)) {
-              setClauses.push(`${key} = ?`);
-              params.push(statusData[key]);
-          }
+    for (const key in statusData) {
+      if (allowedFields.includes(key)) {
+        setClauses.push(`${key} = ?`);
+        params.push(statusData[key]);
       }
+    }
 
-      if (setClauses.length === 0) {
-          return false;
-      }
+    if (setClauses.length === 0) {
+      return false;
+    }
 
-      const sql = `UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`;
-      params.push(userId);
+    const sql = `UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`;
+    params.push(userId);
 
-      const [result] = await pool.execute(sql, params);
-      return result.affectedRows > 0;
+    const [result] = await pool.execute(sql, params);
+    return result.affectedRows > 0;
   }
 }
 

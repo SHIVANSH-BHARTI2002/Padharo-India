@@ -6,7 +6,9 @@ import {
     getGuideById,
     createGuide,
     updateGuide, // <-- Import
-    deleteGuide  // <-- Import
+    deleteGuide,  // <-- Import
+    getMyGuideBookings,
+    getMyGuideStats
 } from '../controllers/guide.controller.js';
 import { authenticateToken, checkRole, checkBusinessType } from '../middleware/auth.middleware.js';
 
@@ -50,7 +52,14 @@ router.post(
         body('specialties.*').optional().isString().trim().notEmpty(),
         body('price_per_hour').optional().isDecimal({ decimal_digits: '0,2' }).toFloat(),
         body('experience_years').optional().isInt({ min: 0 }).toInt(),
-        body('image_url').optional({ checkFalsy: true }).isURL()
+        // Accept either a full URL (http/https) or a relative uploads path like /uploads/profile/xyz.jpg
+        body('image_url').optional({ checkFalsy: true }).custom((value) => {
+            if (typeof value !== 'string') return false;
+            const v = value.trim();
+            if (!v) return false;
+            if (v.startsWith('/uploads/')) return true;
+            try { new URL(v); return true; } catch { return false; }
+        })
     ],
     handleValidationErrors,
     createGuide
@@ -73,7 +82,14 @@ router.put(
         body('specialties.*').optional().isString().trim().notEmpty(),
         body('price_per_hour').optional().isDecimal({ decimal_digits: '0,2' }).toFloat(),
         body('experience_years').optional().isInt({ min: 0 }).toInt(),
-        body('image_url').optional({ checkFalsy: true }).isURL(),
+        // Accept either a full URL (http/https) or a relative uploads path like /uploads/profile/xyz.jpg
+        body('image_url').optional({ checkFalsy: true }).custom((value) => {
+            if (typeof value !== 'string') return false;
+            const v = value.trim();
+            if (!v) return false;
+            if (v.startsWith('/uploads/')) return true;
+            try { new URL(v); return true; } catch { return false; }
+        }),
         body('tours_completed').optional().isInt({ min: 0 }).toInt(),
         // Ensure forbidden fields are not allowed
         body('guide_user_id').not().exists().withMessage('Cannot change guide owner.'),
@@ -94,6 +110,25 @@ router.delete(
     ],
     handleValidationErrors,
     deleteGuide
+);
+
+// --- Guide Self Endpoints ---
+// GET /api/guides/my/bookings - Upcoming/assigned bookings for this guide
+router.get(
+    '/my/bookings',
+    authenticateToken,
+    checkRole(['Business']),
+    checkBusinessType(['Guide']),
+    getMyGuideBookings
+);
+
+// GET /api/guides/my/stats - Monthly stats for this guide
+router.get(
+    '/my/stats',
+    authenticateToken,
+    checkRole(['Business']),
+    checkBusinessType(['Guide']),
+    getMyGuideStats
 );
 
 export default router;

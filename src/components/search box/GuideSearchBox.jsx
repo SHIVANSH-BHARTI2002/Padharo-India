@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, MapPinIcon, LanguageIcon, SparklesIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
-const GuideSearchBox = () => {
-    const [searchQuery, setSearchQuery] = useState('');
+const GuideSearchBox = ({ onSearch, initialQuery = '', initialLanguage = '', initialSpecialty = '' }) => {
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
+    const [language, setLanguage] = useState(initialLanguage);
+    const [specialty, setSpecialty] = useState(initialSpecialty);
 
     const handleSearch = () => {
-        console.log('Searching for guides...', { searchQuery });
-        alert('Searching for guides!');
+        if (typeof onSearch === 'function') {
+            onSearch({ query: searchQuery.trim(), language, specialty });
+        }
+    };
+
+    const handleClear = () => {
+        setSearchQuery('');
+        setLanguage('');
+        setSpecialty('');
+        if (typeof onSearch === 'function') {
+            onSearch({ query: '', language: '', specialty: '' });
+        }
     };
 
     return (
@@ -20,6 +32,7 @@ const GuideSearchBox = () => {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
                             placeholder="Search by city or guide name..."
                             className="w-full pl-16 pr-6 py-6 text-lg font-medium text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none"
                         />
@@ -28,24 +41,32 @@ const GuideSearchBox = () => {
                     {/* Filters */}
                     <div className="relative lg:col-span-1 border-b lg:border-b-0 lg:border-r border-gray-200">
                         <LanguageIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <select className="w-full pl-12 pr-8 py-6 bg-transparent text-gray-700 border-none outline-none appearance-none cursor-pointer">
+                        <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="w-full pl-12 pr-8 py-6 bg-transparent text-gray-700 border-none outline-none appearance-none cursor-pointer"
+                        >
                             <option value="">Language</option>
-                            <option value="english">English</option>
-                            <option value="hindi">Hindi</option>
-                            <option value="spanish">Spanish</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Spanish">Spanish</option>
                         </select>
-                        <ChevronDownIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none"/>
+                        <ChevronDownIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                     </div>
 
                     <div className="relative lg:col-span-1 border-b lg:border-b-0 lg:border-r border-gray-200">
                         <SparklesIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <select className="w-full pl-12 pr-8 py-6 bg-transparent text-gray-700 border-none outline-none appearance-none cursor-pointer">
+                        <select
+                            value={specialty}
+                            onChange={(e) => setSpecialty(e.target.value)}
+                            className="w-full pl-12 pr-8 py-6 bg-transparent text-gray-700 border-none outline-none appearance-none cursor-pointer"
+                        >
                             <option value="">Specialty</option>
-                            <option value="history">History</option>
-                            <option value="cuisine">Cuisine</option>
-                            <option value="adventure">Adventure</option>
+                            <option value="History">History</option>
+                            <option value="Cuisine">Cuisine</option>
+                            <option value="Adventure">Adventure</option>
                         </select>
-                         <ChevronDownIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none"/>
+                        <ChevronDownIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                     </div>
 
                     {/* Search Button */}
@@ -56,6 +77,12 @@ const GuideSearchBox = () => {
                         >
                             <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
                             Search
+                        </button>
+                        <button
+                            onClick={handleClear}
+                            className="mt-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+                        >
+                            Clear Filters
                         </button>
                     </div>
                 </div>

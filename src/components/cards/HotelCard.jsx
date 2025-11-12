@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
-const HotelCard = ({ image, rating, name, location, description, features, price }) => {
+const HotelCard = ({ id, image, rating, name, location, description, features, price }) => {
     const [isFavorite, setIsFavorite] = useState(false);
     const [showAllFeatures, setShowAllFeatures] = useState(false);
 
@@ -99,7 +99,7 @@ const HotelCard = ({ image, rating, name, location, description, features, price
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end space-y-4 sm:space-y-0">
                         {/* Price */}
                         <div className="text-left">
-                            <div className="text-sm text-gray-500 mb-1">Starting from</div>
+                            <div className="text-sm text-gray-500 mb-1">Average price</div>
                             <div className="flex items-center">
                                 <CurrencyRupeeIcon className="h-6 w-6 text-green-600" />
                                 <span className="text-3xl font-bold text-gray-900">{price}</span>
@@ -110,7 +110,7 @@ const HotelCard = ({ image, rating, name, location, description, features, price
 
                         {/* Actions */}
                         <div className="flex space-x-3">
-                            <Link to={`/hotels/${name}`}>
+                            <Link to={`/hotels/${id}`}>
                                 <button className="px-6 py-2 border-2 border-amber-500 text-amber-500 rounded-full font-semibold hover:bg-amber-500 hover:text-white transition-all duration-300">
                                     View Details
                                 </button>

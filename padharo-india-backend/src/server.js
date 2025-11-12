@@ -38,6 +38,36 @@ app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
+// --- Static file serving for uploads (profile images, etc.) ---
+// Serve files from src/uploads via /uploads URL path to match multer destination
+const uploadsDir = path.resolve(__dirname, './uploads');
+app.use('/uploads', express.static(uploadsDir));
+
+// --- DB bootstrap: ensure users.profileImageUrl column exists ---
+async function ensureUsersProfileImageColumn() {
+  try {
+    const checkSql = `
+      SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME = 'profileImageUrl'
+    `;
+    const [rows] = await pool.execute(checkSql);
+    if (!Array.isArray(rows) || rows.length === 0) {
+      await pool.execute("ALTER TABLE users ADD COLUMN profileImageUrl VARCHAR(255) NULL");
+      console.log('✅ Added users.profileImageUrl column');
+    } else {
+      console.log('ℹ️ users.profileImageUrl column already exists');
+    }
+  } catch (err) {
+    console.error('⚠️ Failed to ensure users.profileImageUrl column:', err?.message || err);
+  }
+}
+
+// Kick off DB bootstrap (non-blocking)
+ensureUsersProfileImageColumn();
+
 // --- API Routes ---
 
 // Basic Route for Health Check
@@ -79,19 +109,20 @@ app.use(errorHandler); //
 // --- Server Startup ---
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
+  console.log(`📁 Static uploads served from /uploads at ${uploadsDir}`);
 });
 
 // --- Graceful Shutdown ---
 const shutdown = async (signal) => {
-    console.log(`\n${signal} received. Shutting down server...`);
-    try {
-        await pool.end(); //
-        console.log('Database pool closed.');
-        process.exit(0);
-    } catch (err) {
-        console.error('Error closing database pool:', err.message);
-        process.exit(1);
-    }
+  console.log(`\n${signal} received. Shutting down server...`);
+  try {
+    await pool.end(); //
+    console.log('Database pool closed.');
+    process.exit(0);
+  } catch (err) {
+    console.error('Error closing database pool:', err.message);
+    process.exit(1);
+  }
 };
 
 process.on('SIGINT', () => shutdown('SIGINT')); // Handle Ctrl+C

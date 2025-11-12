@@ -1,13 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPinIcon, MoonIcon, UserIcon, CurrencyRupeeIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
 const TourPackageCard = ({ pkg }) => {
     const { image, name, places, nights, description, included, price } = pkg;
     const packageId = name.replace(/\s+/g, '-');
+    const navigate = useNavigate();
 
     return (
-        <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:-translate-y-2 transition-all duration-500 w-full">
+        <div
+            className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:-translate-y-2 transition-all duration-500 w-full cursor-pointer"
+            onClick={() => navigate(`/packages/${packageId}`)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/packages/${packageId}`); }}
+        >
             {/* Image Section */}
             <div className="relative h-64 overflow-hidden">
                 <img

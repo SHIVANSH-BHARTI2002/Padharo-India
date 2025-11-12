@@ -3,6 +3,16 @@ import pool from '../../config/db.js';
 import Review, { calculateAverageRating } from './review.model.js';
 
 class Guide {
+  /**
+   * Retrieves the guide profile id for a given user id.
+   * @param {number} userId - The user id who owns the guide profile.
+   * @returns {Promise<number|null>} - The guide id or null if not found.
+   */
+  static async findIdByUserId(userId) {
+    const sql = 'SELECT id FROM guides WHERE guide_user_id = ? LIMIT 1';
+    const [rows] = await pool.execute(sql, [userId]);
+    return rows[0] ? rows[0].id : null;
+  }
   // --- FIND OWNER HELPER ---
   /**
    * Retrieves the guide_user_id for a given guide ID.
@@ -24,35 +34,38 @@ class Guide {
     let sql = `
       SELECT
         g.id, g.location, g.description_short, g.languages_json, g.specialties_json,
-        g.price_per_hour, g.experience_years, g.tours_completed, g.image_url, g.is_verified,
+        g.price_per_hour, g.experience_years, g.tours_completed,
+        COALESCE(g.image_url, u.profileImageUrl) AS image_url, g.is_verified,
         u.firstName as guideFirstName, u.lastName as guideLastName
       FROM guides g
-      JOIN users u ON g.guide_user_id = u.id
-      WHERE u.role = 'Business' AND u.businessType = 'Guide' AND g.is_verified = TRUE
+      LEFT JOIN users u ON g.guide_user_id = u.id
+      WHERE 1=1
     `;
     const params = [];
     if (filters.query) {
-      sql += ' AND (g.location LIKE ? OR CONCAT(u.firstName, " ", u.lastName) LIKE ?)';
+      sql += ' AND (g.location LIKE ? OR CONCAT(COALESCE(u.firstName, ""), " ", COALESCE(u.lastName, "")) LIKE ?)';
       const searchQuery = `%${filters.query}%`;
       params.push(searchQuery, searchQuery);
     }
+    // Case-insensitive match for language and specialty inside JSON arrays.
+    // Uses LIKE against the JSON string (e.g., ["English","Hindi"]) with quoted term.
     if (filters.language) {
-        sql += ' AND JSON_CONTAINS(g.languages_json, JSON_QUOTE(?))';
-        params.push(filters.language);
+      sql += ' AND LOWER(g.languages_json) LIKE CONCAT("%", LOWER(JSON_QUOTE(?)), "%")';
+      params.push(filters.language);
     }
-     if (filters.specialty) {
-        sql += ' AND JSON_CONTAINS(g.specialties_json, JSON_QUOTE(?))';
-        params.push(filters.specialty);
+    if (filters.specialty) {
+      sql += ' AND LOWER(g.specialties_json) LIKE CONCAT("%", LOWER(JSON_QUOTE(?)), "%")';
+      params.push(filters.specialty);
     }
     // Add sorting logic if needed
 
     const [rows] = await pool.execute(sql, params);
     return rows.map(guide => {
-         let languages = [];
-         let specialties = [];
-         try { languages = guide.languages_json ? JSON.parse(guide.languages_json) : []; } catch(e) {/* Handle error */}
-         try { specialties = guide.specialties_json ? JSON.parse(guide.specialties_json) : []; } catch(e) {/* Handle error */}
-         return { ...guide, languages, specialties, languages_json: undefined, specialties_json: undefined };
+      let languages = [];
+      let specialties = [];
+      try { languages = guide.languages_json ? JSON.parse(guide.languages_json) : []; } catch (e) {/* Handle error */ }
+      try { specialties = guide.specialties_json ? JSON.parse(guide.specialties_json) : []; } catch (e) {/* Handle error */ }
+      return { ...guide, languages, specialties, languages_json: undefined, specialties_json: undefined };
     });
   }
 
@@ -66,7 +79,7 @@ class Guide {
       SELECT
         g.id, g.guide_user_id, g.location, g.description_short, g.description_long,
         g.languages_json, g.specialties_json, g.price_per_hour, g.experience_years,
-        g.tours_completed, g.image_url, g.is_verified,
+        g.tours_completed, COALESCE(g.image_url, u.profileImageUrl) AS image_url, g.is_verified,
         u.firstName as guideFirstName, u.lastName as guideLastName,
         u.mobile as guideMobile, u.email as guideEmail
       FROM guides g
@@ -77,26 +90,45 @@ class Guide {
     if (rows.length === 0) return null;
 
     const guide = rows[0];
-    try { guide.languages = guide.languages_json ? JSON.parse(guide.languages_json) : []; } catch(e) { guide.languages = []; }
-    try { guide.specialties = guide.specialties_json ? JSON.parse(guide.specialties_json) : []; } catch(e) { guide.specialties = []; }
+    const parseArray = (val) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) return parsed;
+        } catch (_) { /* ignore */ }
+        return val.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+
+    // Support alternate column names and robust parsing
+    const languagesRaw = guide.languages_json ?? guide.language_json ?? null;
+    const specialtiesRaw = guide.specialties_json ?? guide.specialities_json ?? null;
+    guide.languages = parseArray(languagesRaw);
+    guide.specialties = parseArray(specialtiesRaw);
+
+    // Remove raw JSON fields from the response
     delete guide.languages_json;
+    delete guide.language_json;
     delete guide.specialties_json;
+    delete guide.specialities_json;
 
     const reviews = await Review.findByService('Guide', id);
     guide.reviewsData = {
-        averageRating: calculateAverageRating(reviews),
-        count: reviews.length,
-        list: reviews.slice(0, 5)
+      averageRating: calculateAverageRating(reviews),
+      count: reviews.length,
+      list: reviews.slice(0, 5)
     };
 
     // Mock/Placeholder for gallery/places - replace with DB logic if implemented
-     if (guide.id === 1) { // Example for guide 1
-         guide.placesCovered = ['Hawa Mahal', 'Amber Fort', 'City Palace', 'Jantar Mantar'];
-         guide.gallery = [ /* ... gallery URLs ... */];
-     } else {
-         guide.placesCovered = [];
-         guide.gallery = [];
-     }
+    if (guide.id === 1) { // Example for guide 1
+      guide.placesCovered = ['Hawa Mahal', 'Amber Fort', 'City Palace', 'Jantar Mantar'];
+      guide.gallery = [ /* ... gallery URLs ... */];
+    } else {
+      guide.placesCovered = [];
+      guide.gallery = [];
+    }
     return guide;
   }
 
@@ -130,56 +162,56 @@ class Guide {
     return result.insertId;
   }
 
-   /**
-   * Updates a guide's profile details.
-   * @param {number} id - The ID of the guide profile to update.
-   * @param {object} updateData - An object containing fields to update.
-   * @param {number} guideUserId - The ID of the user attempting the update.
-   * @returns {Promise<boolean>} - True if the update was successful, false otherwise.
-   */
+  /**
+  * Updates a guide's profile details.
+  * @param {number} id - The ID of the guide profile to update.
+  * @param {object} updateData - An object containing fields to update.
+  * @param {number} guideUserId - The ID of the user attempting the update.
+  * @returns {Promise<boolean>} - True if the update was successful, false otherwise.
+  */
   static async update(id, updateData, guideUserId) {
     const ownerId = await this.findOwnerId(id);
     if (ownerId === null) return false; // Not found
     if (ownerId !== guideUserId) {
-        throw new Error('Forbidden: User does not own this guide profile.');
+      throw new Error('Forbidden: User does not own this guide profile.');
     }
 
     const allowedFields = [
-        'location', 'description_short', 'description_long', 'languages_json',
-        'specialties_json', 'price_per_hour', 'experience_years', 'image_url',
-        'tours_completed' // Maybe allow updating this? Or calculate it?
-        // Admin might update 'is_verified' via a separate route/model function
+      'location', 'description_short', 'description_long', 'languages_json',
+      'specialties_json', 'price_per_hour', 'experience_years', 'image_url',
+      'tours_completed' // Maybe allow updating this? Or calculate it?
+      // Admin might update 'is_verified' via a separate route/model function
     ];
     const setClauses = [];
     const params = [];
 
     for (const key of allowedFields) {
-        if (updateData[key] !== undefined) {
-            let value = updateData[key];
-            let dbKey = key;
+      if (updateData[key] !== undefined) {
+        let value = updateData[key];
+        let dbKey = key;
 
-            // Handle JSON fields and potential key renaming
-            if (key === 'languages') { dbKey = 'languages_json'; value = JSON.stringify(value || []); }
-            if (key === 'specialties') { dbKey = 'specialties_json'; value = JSON.stringify(value || []); }
+        // Handle JSON fields and potential key renaming
+        if (key === 'languages') { dbKey = 'languages_json'; value = JSON.stringify(value || []); }
+        if (key === 'specialties') { dbKey = 'specialties_json'; value = JSON.stringify(value || []); }
 
-            setClauses.push(`${dbKey} = ?`);
-            params.push(value);
-        }
+        setClauses.push(`${dbKey} = ?`);
+        params.push(value);
+      }
     }
 
     if (setClauses.length === 0) {
-        return false; // Nothing valid to update
+      return false; // Nothing valid to update
     }
 
     const sql = `UPDATE guides SET ${setClauses.join(', ')} WHERE id = ? AND guide_user_id = ?`;
     params.push(id, guideUserId);
 
     try {
-        const [result] = await pool.execute(sql, params);
-        return result.affectedRows > 0;
+      const [result] = await pool.execute(sql, params);
+      return result.affectedRows > 0;
     } catch (error) {
-        console.error("Error updating guide in DB:", error);
-        throw error;
+      console.error("Error updating guide in DB:", error);
+      throw error;
     }
   }
 
@@ -193,19 +225,19 @@ class Guide {
     const ownerId = await this.findOwnerId(id);
     if (ownerId === null) return false; // Not found
     if (ownerId !== guideUserId) {
-        throw new Error('Forbidden: User does not own this guide profile.');
+      throw new Error('Forbidden: User does not own this guide profile.');
     }
 
     const sql = 'DELETE FROM guides WHERE id = ? AND guide_user_id = ?';
     try {
-        const [result] = await pool.execute(sql, [id, guideUserId]);
-        return result.affectedRows > 0;
+      const [result] = await pool.execute(sql, [id, guideUserId]);
+      return result.affectedRows > 0;
     } catch (error) {
-        console.error("Error deleting guide from DB:", error);
-        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-             throw new Error('Cannot delete guide profile: It has associated bookings or reviews.');
-        }
-        throw error;
+      console.error("Error deleting guide from DB:", error);
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new Error('Cannot delete guide profile: It has associated bookings or reviews.');
+      }
+      throw error;
     }
   }
 

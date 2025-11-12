@@ -8,11 +8,11 @@ export const getAllPackages = async (req, res, next) => {
   try {
     // Extract filters from query parameters matching PackageSearchBox
     const filters = {
-        query: req.query.query || '',
-        price: req.query.price || '', // Max price
-        rating: req.query.rating || '', // Min rating
-        nights: req.query.nights || '', // Max nights (or range if implemented)
-        // sort: req.query.sort || '' // Add if implementing sorting
+      query: req.query.query || '',
+      price: req.query.price || '', // Max price
+      rating: req.query.rating || '', // Min rating
+      nights: req.query.nights || '', // Max nights (or range if implemented)
+      // sort: req.query.sort || '' // Add if implementing sorting
     };
 
     const packages = await Package.findAll(filters);
@@ -49,105 +49,158 @@ export const getPackageByName = async (req, res, next) => {
  * Controller to create a new package (Placeholder - requires Admin role likely).
  */
 export const createPackage = async (req, res, next) => {
-    // !! IMPORTANT: Add authentication and role checking middleware (likely Admin) !!
+  // !! IMPORTANT: Add authentication and role checking middleware (likely Admin) !!
 
-    try {
-        // Ensure arrays for JSON fields
-        const places = Array.isArray(req.body.places) ? req.body.places : [];
-        const included = Array.isArray(req.body.included) ? req.body.included : [];
-        // const itinerary = Array.isArray(req.body.itinerary) ? req.body.itinerary : [];
-        // const galleryUrls = Array.isArray(req.body.galleryUrls) ? req.body.galleryUrls : [];
+  try {
+    // Ensure arrays for JSON fields
+    const places = Array.isArray(req.body.places) ? req.body.places : [];
+    const included = Array.isArray(req.body.included) ? req.body.included : [];
+    // const itinerary = Array.isArray(req.body.itinerary) ? req.body.itinerary : [];
+    // const galleryUrls = Array.isArray(req.body.galleryUrls) ? req.body.galleryUrls : [];
 
 
-        const packageData = {
-            ...req.body,
-            places: places,
-            included: included
-            // itinerary: itinerary,
-            // galleryUrls: galleryUrls
-        };
+    const packageData = {
+      ...req.body,
+      places: places,
+      included: included
+      // itinerary: itinerary,
+      // galleryUrls: galleryUrls
+    };
 
-        const newPackageId = await Package.create(packageData);
-        res.status(201).json({ message: 'Package created successfully', packageId: newPackageId });
+    const newPackageId = await Package.create(packageData);
+    res.status(201).json({ message: 'Package created successfully', packageId: newPackageId });
 
-    } catch (error) {
-         // Handle duplicate name error from model
-        if (error.message === 'Package name already exists.') {
-            return res.status(409).json({ message: error.message });
-        }
-        console.error("Error in createPackage:", error);
-        next(error);
+  } catch (error) {
+    // Handle duplicate name error from model
+    if (error.message === 'Package name already exists.') {
+      return res.status(409).json({ message: error.message });
     }
+    console.error("Error in createPackage:", error);
+    next(error);
+  }
 };
 
 // --- Add other controller functions as needed (updatePackage, deletePackage) ---
 export const updatePackage = async (req, res, next) => {
-    try {
-        const packageId = parseInt(req.params.id); // Get ID from param for update/delete
-        const updateData = req.body;
+  try {
+    const packageId = parseInt(req.params.id); // Get ID from param for update/delete
+    const updateData = req.body;
 
-        if (isNaN(packageId)) {
-            return res.status(400).json({ message: 'Invalid Package ID.' });
-        }
-
-        // Handle array inputs for JSON fields
-        if (updateData.places && !Array.isArray(updateData.places)) {
-             return res.status(400).json({ message: 'Places must be an array.' });
-        }
-        if (updateData.included && !Array.isArray(updateData.included)) {
-             return res.status(400).json({ message: 'Included items must be an array.' });
-        }
-        // Add similar checks for itinerary, galleryUrls if implemented
-
-        const success = await Package.update(packageId, updateData);
-
-        if (!success) {
-            // Check if it actually exists
-             const pkg = await Package.findById(packageId); // Need findById if not already existing
-             if (!pkg) {
-                return res.status(404).json({ message: 'Package not found.' });
-             } else {
-                 return res.status(200).json({ message: 'No fields updated or update failed.' });
-             }
-        }
-
-        // Fetch by Name requires the name, let's just return success or fetch by ID if needed
-        // For consistency, might need Package.findById(id)
-        res.status(200).json({ message: 'Package updated successfully' }); // Or return updated package data
-
-    } catch (error) {
-        if (error.message === 'Package name already exists.') {
-            return res.status(409).json({ message: error.message });
-        }
-        console.error(`Error in updatePackage controller (id: ${req.params.id}):`, error);
-        next(error);
+    if (isNaN(packageId)) {
+      return res.status(400).json({ message: 'Invalid Package ID.' });
     }
+
+    // Handle array inputs for JSON fields
+    if (updateData.places && !Array.isArray(updateData.places)) {
+      return res.status(400).json({ message: 'Places must be an array.' });
+    }
+    if (updateData.included && !Array.isArray(updateData.included)) {
+      return res.status(400).json({ message: 'Included items must be an array.' });
+    }
+    // Add similar checks for itinerary, galleryUrls if implemented
+
+    const success = await Package.update(packageId, updateData);
+
+    if (!success) {
+      // Check if it actually exists
+      const pkg = await Package.findById(packageId); // Need findById if not already existing
+      if (!pkg) {
+        return res.status(404).json({ message: 'Package not found.' });
+      } else {
+        return res.status(200).json({ message: 'No fields updated or update failed.' });
+      }
+    }
+
+    // Fetch by Name requires the name, let's just return success or fetch by ID if needed
+    // For consistency, might need Package.findById(id)
+    res.status(200).json({ message: 'Package updated successfully' }); // Or return updated package data
+
+  } catch (error) {
+    if (error.message === 'Package name already exists.') {
+      return res.status(409).json({ message: error.message });
+    }
+    console.error(`Error in updatePackage controller (id: ${req.params.id}):`, error);
+    next(error);
+  }
 };
 
 /**
  * Controller to delete a package. Requires Admin role.
  */
 export const deletePackage = async (req, res, next) => {
-    try {
-        const packageId = parseInt(req.params.id);
+  try {
+    const packageId = parseInt(req.params.id);
 
-        if (isNaN(packageId)) {
-            return res.status(400).json({ message: 'Invalid Package ID.' });
-        }
-
-        const success = await Package.deleteById(packageId);
-
-        if (!success) {
-            return res.status(404).json({ message: 'Package not found.' });
-        }
-
-        res.status(200).json({ message: 'Package deleted successfully.' });
-
-    } catch (error) {
-        if (error.message.startsWith('Cannot delete package:')) {
-             return res.status(409).json({ message: error.message }); // Conflict
-         }
-        console.error(`Error in deletePackage controller (id: ${req.params.id}):`, error);
-        next(error);
+    if (isNaN(packageId)) {
+      return res.status(400).json({ message: 'Invalid Package ID.' });
     }
+
+    const success = await Package.deleteById(packageId);
+
+    if (!success) {
+      return res.status(404).json({ message: 'Package not found.' });
+    }
+
+    res.status(200).json({ message: 'Package deleted successfully.' });
+
+  } catch (error) {
+    if (error.message.startsWith('Cannot delete package:')) {
+      return res.status(409).json({ message: error.message }); // Conflict
+    }
+    console.error(`Error in deletePackage controller (id: ${req.params.id}):`, error);
+    next(error);
+  }
+};
+
+/**
+ * Upload a package image (edit flow) and update package.image_url.
+ * Requires Admin role; validates package existence.
+ */
+export const uploadPackageImage = async (req, res, next) => {
+  try {
+    const packageId = parseInt(req.params.id);
+    if (isNaN(packageId)) {
+      return res.status(400).json({ message: 'Invalid Package ID.' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded.' });
+    }
+
+    const existing = await Package.findById(packageId);
+    if (!existing) {
+      return res.status(404).json({ message: 'Package not found.' });
+    }
+
+    const filename = req.file.filename;
+    const publicUrl = `/uploads/package/${filename}`;
+
+    const success = await Package.update(packageId, { image_url: publicUrl });
+    if (!success) {
+      return res.status(500).json({ message: 'Failed to update package image.' });
+    }
+
+    const updated = await Package.findById(packageId);
+    res.status(200).json({ message: 'Package image uploaded successfully.', url: publicUrl, package: updated });
+  } catch (error) {
+    console.error('Error in uploadPackageImage:', error);
+    next(error);
+  }
+};
+
+/**
+ * Upload a package image (create flow) and return URL without DB update.
+ * Requires Admin role.
+ */
+export const uploadPackageImageTemp = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded.' });
+    }
+    const filename = req.file.filename;
+    const publicUrl = `/uploads/package/${filename}`;
+    res.status(200).json({ message: 'Package image uploaded successfully.', url: publicUrl });
+  } catch (error) {
+    console.error('Error in uploadPackageImageTemp:', error);
+    next(error);
+  }
 };

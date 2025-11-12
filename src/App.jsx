@@ -12,11 +12,14 @@ import PackagesPage from './pages/PackagesPage';
 import PackageDetailsPage from './pages/PackageDetailsPage';
 import UserProfilePage from './pages/UserProfilePage';
 import DriverProfilePage from './pages/DriverProfilePage';
-import GuideDashboard from './pages/GuideDashboard'; 
+import GuideDashboard from './pages/GuideDashboard';
 import HotelDashboard from './pages/HotelDashboard';
 // --- NEW IMPORT ---
 import AdminDashboard from './pages/AdminDashboard';
 // --- END NEW IMPORT ---
+// --- PAYMENT PAGE IMPORT ---
+import PaymentPage from './pages/PaymentPage';
+// --- END PAYMENT PAGE IMPORT ---
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
@@ -39,21 +42,24 @@ function App() {
           <Route path="/cabs" element={<CabsPage />} />
           <Route path="/cabs/:cabName" element={<CabDetailsPage />} />
           <Route path="/hotels" element={<HotelListPage />} />
-          <Route path="/hotels/:hotelName" element={<HotelDetailsPage />} />
+          <Route path="/hotels/:hotelId" element={<HotelDetailsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
           <Route path="/guides/:guideId" element={<GuideDetailsPage />} />
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/packages/:packageId" element={<PackageDetailsPage />} />
-          
+
           {/* User Profile & Dashboards */}
           <Route path="/profile" element={<UserProfilePage />} />
           <Route path="/driver-profile" element={<DriverProfilePage />} />
           <Route path="/dashboard/guide" element={<GuideDashboard />} />
           <Route path="/dashboard/hotel" element={<HotelDashboard />} />
-          
+
           {/* --- NEW ROUTE --- */}
           <Route path="/admin" element={<AdminDashboard />} />
           {/* --- END NEW ROUTE --- */}
+          {/* --- PAYMENT ROUTE --- */}
+          <Route path="/payment" element={<PaymentPage />} />
+          {/* --- END PAYMENT ROUTE --- */}
         </Routes>
       </main>
 
